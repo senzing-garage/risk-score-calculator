@@ -1,165 +1,147 @@
-# template-repository
+# risk-scoring-calculator
 
-This repository contains exemplar artifacts (files) for Senzing repositories.
+## Overview
 
-GitHub provides support for these artifacts.  As an example, click on the following links on this GitHub repository:
+This application examines G2 entities and scores them based the quality of its data and the sharing and interaction of the data with other entities.
 
-- "Insights" tab > "[Community](https://github.com/senzing/template-repository/community)" on left-hand navigation bar
+These are the rules used for scoring:
 
-## Files
+1. Red Collision (entity has any of the following):
+    1. Entity has a Red status for Data Quality
+    1. Manual flag for Red
+    1. Forced Un-merge (This is not implemented yet)
 
-Senzing community files:
+1. Red Data Quality (entity has any of the following):
+    1. Is Ambiguous or has Ambiguous relationship
+    1. Those having multiple F1E or F1ES of the same type – requires RXSSN change
+    1. Those with a F1E or F1ES that is shared with other entities 
+    1. Same entity with multiple DOBs
 
-1. [CODE_OF_CONDUCT.md](#code_of_conductmd)
-1. [CONTRIBUTING.md](#contributingmd)
-1. .github/
-    1. [senzing-corporate-contributor-license-agreement.pdf](#githubsenzing-corporate-contributor-license-agreementpdf)
-    1. [senzing-individual-contributor-license-agreement.pdf](#githubsenzing-individual-contributor-license-agreementpdf)
-    1. ISSUE_TEMPLATE/
-        1. [bug_report.md](#githubissue_templatebug_reportmd)
-        1. [documentation_request.md](#githubissue_templatedocumentation_requestmd)
-        1. [feature_request.md](#githubissue_templatefeature_requestmd)
-1. [LICENSE](#license)
-1. [PULL_REQUEST_TEMPLATE.md](#pull_request_templatemd)
-1. [README.md](#readmemd)
+1. Green Collision (entity has all of the following):
+    1. Entity has a Green status for Data Quality
+    1. Entity has no shared F1
+    1. Entity has no possible matches
 
-## README.md
+1. Green Data Quality (entity has all of the following):
+    1. Entity has at least 1 IMDM records
+    1. Entity has one and only one SSN
+    1. Entity has one and only one DOB
 
-Although the file you are reading is a `README.md` file, this isn't the style of `README.md` for most projects.
-Depending upon the type of repository, the following `README.md` templates may be more appropriate:
+It receives data via RabbitMQ, which in turn can be fed by a streaming service.
 
-1. [README.md](.github/README_TEMPLATE/demonstration/README.md) template for demonstrations. Examples:
-    1. [template-python/README.md](https://github.com/Senzing/template-python/blob/master/README.md)
-    1. [template-docker/README.md](https://github.com/Senzing/template-docker/blob/master/README.md)
+## Setup and building
 
-## LICENSE
+### Dependencies
 
-The `LICENSE` file describes the terms and conditions under which the code in the repository can be used.
-The recommended license file is
-"[Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0.html)".
-A comparison of licenses can be found at
-[choosealicense.com](https://choosealicense.com/licenses/).
+To build the Risk Score Calculator you will need Apache Maven (recommend version 3.6.1 or later)
+as well as OpenJDK version 11.0.x (recommend version 11.0.6+10 or later).
 
-The [LICENSE](LICENSE) file in this repository is based on
-"[Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0.html)".
+You will also need the Senzing `g2.jar` file installed in your Maven repository.
+The Senzing REST API Server requires version 1.13.x or later of the Senzing API and Senzing App.
+In order to install `g2.jar` you must:
 
-### How to create LICENSE
+1. Locate your
+   [SENZING_G2_DIR](https://github.com/Senzing/knowledge-base/blob/master/lists/environment-variables.md#senzing_g2_dir)
+   directory.
+   The default locations are:
+    1. [Linux](https://github.com/Senzing/knowledge-base/blob/master/HOWTO/install-senzing-api.md#centos): `/opt/senzing/g2`
+    1. Windows MSI Installer: `C:\Program Files\Senzing\`
 
-1. Option #1: Using GitHub's "Wizard"
-    1. When [creating a new repository](https://github.com/new), in the "Add a license:" drop-down, choose "Apache License 2.0"
-1. Option #2: Manual file creation
-    1. See GitHub's [Adding a license to a repository](https://help.github.com/articles/adding-a-license-to-a-repository/)
+1. Determine your `SENZING_G2_JAR_VERSION` version number:
+    1. Locate your `g2BuildVersion.json` file:
+        1. Linux: `${SENZING_G2_DIR}/g2BuildVersion.json`
+        1. Windows: `${SENZING_G2_DIR}\data\g2BuildVersion.json`
+    1. Find the value for the `"VERSION"` property in the JSON contents.
+       Example:
 
-## CODE_OF_CONDUCT.md
+        ```console
+        {
+            "PLATFORM": "Linux",
+            "VERSION": "1.14.20060",
+            "API_VERSION": "1.14.3",
+            "BUILD_NUMBER": "2020_02_29__02_00"
+        }
+        ```
 
-The `CODE_OF_CONDUCT.md` file describes the social conventions among contributors to the repository.
+1. Install the `g2.jar` file in your local Maven repository, replacing the
+   `${SENZING_G2_DIR}` and `${SENZING_G2_JAR_VERSION}` variables as determined above:
 
-> A *code of conduct* defines standards for how to engage in a community. It signals an inclusive environment that respects all contributions. It also outlines procedures for addressing problems between members of your project's community. For more information on why a code of conduct defines standards and expectations for how to engage in a community, see the [Open Source Guide](https://opensource.guide/code-of-conduct/).
->
-> -- <cite>GitHub's [Adding a code of conduct to your project](https://help.github.com/articles/adding-a-code-of-conduct-to-your-project/)</cite>
+    1. Linux:
 
-The [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) file in this repository is based on GitHub's "[Contributor Covenant](https://www.contributor-covenant.org/version/1/4/code-of-conduct.html)".
+        ```console
+        export SENZING_G2_DIR=/opt/senzing/g2
+        export SENZING_G2_JAR_VERSION=1.14.3
 
-### How to create CODE_OF_CONDUCT.md
+        mvn install:install-file \
+            -Dfile=${SENZING_G2_DIR}/lib/g2.jar \
+            -DgroupId=com.senzing \
+            -DartifactId=g2 \
+            -Dversion=${SENZING_G2_JAR_VERSION} \
+            -Dpackaging=jar
+        ```
 
-1. Option #1: Using GitHub's "Wizard"
-    1. [github.com](https://github.com/) > (choose repository) > Insights > Community > Code of conduct > "Add" button > "Contributor Covenant"
-1. Option #2: Manual file creation
-    1. See GitHub's [Adding a code of conduct to your project](https://help.github.com/articles/adding-a-code-of-conduct-to-your-project/)
-    1. Alternative `CODE_OF_CONDUCT.md` content:
-        1. [Apache Software Foundation Code of Conduct](https://www.apache.org/foundation/policies/conduct.html)
+    1. Windows:
 
-## CONTRIBUTING.md
+        ```console
+        set SENZING_G2_DIR="C:\Program Files\Senzing\g2"
+        set SENZING_G2_JAR_VERSION=1.14.3
 
-The `CONTRIBUTING.md` file describes the process for contributing to the repository.
+        mvn install:install-file \
+            -Dfile="%SENZING_G2_DIR%\lib\g2.jar" \
+            -DgroupId=com.senzing \
+            -DartifactId=g2 \
+            -Dversion="%SENZING_G2_JAR_VERSION%" \
+            -Dpackaging=jar
+        ```
 
-> To help your project contributors do good work, you can add a file with contribution guidelines to your project repository's root. When someone opens a pull request or creates an issue, they will see a link to that file.
->
-> -- <cite>GitHub's [Setting guidelines for repository contributors](https://help.github.com/articles/setting-guidelines-for-repository-contributors/)</cite>
+The Risk Scoring Calculator is built on the [Senzing Listener](https://github.com/Senzing/senzing-listener).  You will need to build it and install into local Maven repository before building this application.  Follow the directions for building the [Senzing Listener](https://github.com/Senzing/senzing-listener).
 
-The [CONTRIBUTING.md](CONTRIBUTING.md) file in this repository is an example that needs to be modified to represent the requirements of the actual repository.
+### Building
 
-### How to create CONTRIBUTING.md
+To build simply execute:
 
-1. Option #1: Using GitHub's "Wizard"
-    1. [github.com](https://github.com/) > (choose repository) > Insights > Community > Contributing > "Add" button
-1. Option #2: Manual file creation
-    1. See GitHub's [Setting guidelines for repository contributors](https://help.github.com/articles/setting-guidelines-for-repository-contributors/)
+```console
+mvn install
+```
 
-## PULL_REQUEST_TEMPLATE.md
+## Running
 
-The `PULL_REQUEST_TEMPLATE.md` file asks a pull requester for information about the pull request.
+Before running the Risk Scoring Calculator you need to set up the environment for G2
 
-> When you add a pull request template to your repository, project contributors will automatically see the template's contents in the pull request body.
->
-> -- <cite>GitHub's [Creating a pull request template for your repository](https://help.github.com/articles/creating-a-pull-request-template-for-your-repository/)</cite>
+### Setup
 
-The [PULL_REQUEST_TEMPLATE.md](PULL_REQUEST_TEMPLATE.md) file in this repository
-is an example that can be modified.
+1. Linux
 
-### How to create PULL_REQUEST_TEMPLATE.md
+    ```console
+    export SENZING_G2_DIR=/opt/senzing/g2
+    export LD_LIBRARY_PATH=${SENZING_G2_DIR}/lib:${SENZING_G2_DIR}/lib/debian:$LD_LIBRARY_PATH
+    ```
 
-1. Option #1: Using GitHub's "Wizard"
-    1. [github.com](https://github.com/) > (choose repository) > Insights > Community > Pull request template > "Add" button
-1. Option #2: Manual file creation
-    1. See GitHub's [Creating a pull request template for your repository](https://help.github.com/articles/creating-a-pull-request-template-for-your-repository/)
+1. Windows
 
-## .github/senzing-corporate-contributor-license-agreement.pdf
+    ```console
+    set SENZING_G2_DIR="C:\Program Files\Senzing\g2"
+    set Path=%SENZING_G2_DIR%\lib;%Path%
+    ```
 
-The Senzing, INC. Software Grant and Corporate Contributor License Agreement (CCLA),
-[corporate-contributor-license-agreement.pdf](.github/senzing-corporate-contributor-license-agreement.pdf),
-is the standard agreement for a corporation's contribution to a Senzing repository.
+### Parameters
 
-### How to create .github/senzing-corporate-contributor-license-agreement.pdf
+A few pieces of information are needed for running the application.  They will become parameters on the command line.
 
-1. Make a `.github` directory in the repository
-1. Copy [senzing-corporate-contributor-license-agreement.pdf](.github/senzing-corporate-contributor-license-agreement.pdf) into the new `.github` directory
-1. *DO NOT* modify the contents of [senzing-corporate-contributor-license-agreement.pdf](.github/senzing-corporate-contributor-license-agreement.pdf) without legal approval.
-1. Reference `senzing-corporate-contributor-license-agreement.pdf` in [CONTRIBUTING.md](#contributingmd)
+1. The host name for the RabbitMQ server.  The command line paramter for this is -mqHost.
 
-## .github/senzing-individual-contributor-license-agreement.pdf
+1. The name of the RabbitMQ used for receiving messages.  The paramter is -mqQueue.
 
-The Individual Contributor License Agreement (ICLA),
-[senzing-individual-contributor-license-agreement.pdf](.github/senzing-individual-contributor-license-agreement.pdf),
-is the standard agreement for an individual's contribution to a Senzing repository.
-*Note:* if an individual is contributing on behalf of a company, the
-[senzing-corporate-contributor-license-agreement.pdf](#githubsenzing-corporate-contributor-license-agreementpdf)
-must also be submitted and accepted.
+1. The user name for RabbitMQ.  This might be ignored, based on RabbitMQ security settings.  The parameter is -mqUser.
 
-### How to create .github/senzing-individual-contributor-license-agreement.pdf
+1. The password for RabbitMQ.  This might be ignored, based on RabbitMQ security settings.  The parameter is -mqPassword.
 
-1. Make a `.github` directory in the repository
-1. Copy [senzing-individual-contributor-license-agreement.pdf](.github/senzing-individual-contributor-license-agreement.pdf) into the new `.github` directory
-1. *DO NOT* modify the contents of [senzing-individual-contributor-license-agreement.pdf](.github/senzing-individual-contributor-license-agreement.pdf) without legal approval.
-1. Reference `senzing-individual-contributor-license-agreement.pdf` in [CONTRIBUTING.md](#contributingmd)
+1. Path of the G2 ini file.  The parameter is -iniFile.
 
-## .github/ISSUE_TEMPLATE/bug_report.md
+### Command
 
-A template presented to the Contributor when creating an issue that reports a bug.
+The command for running the application is
 
-The [bug_report.md](.github/ISSUE_TEMPLATE/bug_report.md) file in this repository
-is an example that can be modified.
-
-### How to create .github/ISSUE_TEMPLATE/bug_report.md
-
-1. Option #1: Using GitHub's "Wizard"
-    1. [github.com](https://github.com/) > (choose repository) > Insights > Community > Issue templates > "Add" button > Add template: Bug report
-
-## .github/ISSUE_TEMPLATE/documentation_request.md
-
-A template presented to the Contributor when creating an issue that requests change to the documentation.
-
-The [documentation_request.md](.github/ISSUE_TEMPLATE/documentation_request.md) file in this repository
-is an example that can be modified.
-
-## .github/ISSUE_TEMPLATE/feature_request.md
-
-A template presented to the Contributor when creating an issue that requests a feature.
-
-The [feature_request.md](.github/ISSUE_TEMPLATE/feature_request.md) file in this repository
-is an example that can be modified.
-
-### How to create .github/ISSUE_TEMPLATE/feature_request.md
-
-1. Option #1: Using GitHub's "Wizard"
-    1. [github.com](https://github.com/) > (choose repository) > Insights > Community > Issue templates > "Add" button > Add template: Feature request
+```console
+java -jar target/risk-scoring-calculator-0.0.1-SNAPSHOT.jar -iniFile <ini file path> -mqQueue <queue name> -mqHost <RabbitMQ host> -mqUser <RabbitMQ user name> -mqPassword <RabbitMQ password>
+```

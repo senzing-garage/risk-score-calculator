@@ -15,6 +15,10 @@ public class RiskScoringCalculator {
   public void run(String config) throws Exception {
 
     String consumerType = getConfigValue(config, ConsumerCommandOptions.CONSUMER_TYPE);
+    if (consumerType == null || consumerType.isEmpty()) {
+      consumerType = "rabbitmq";
+    }
+
     ListenerService service = new RiskScoringService();
     service.init(config);
 
