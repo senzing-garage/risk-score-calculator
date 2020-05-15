@@ -102,6 +102,10 @@ docker-package: docker-rmi-for-package
 .PHONY: docker-build
 docker-build: docker-rmi-for-build
 
+	# This is to get the senzing-listener package to the docker build.
+	# It is a dependency and needs to be built before the risk scorer.
+	# This will no long be needed once the senzing-listener can be stored
+	# in a repository (like Artifactory).
 	cp -r $(SENZING_LISTENER_PATH) ./$(SENZING_LISTENER_DIRECTORY)
 	cp Makefile $(SENZING_LISTENER_DIRECTORY)
 
@@ -115,6 +119,9 @@ docker-build: docker-rmi-for-build
 		--tag $(DOCKER_IMAGE_NAME) \
 		--tag $(DOCKER_IMAGE_NAME):$(GIT_VERSION) \
 		.
+
+	# Clean up the senzing-listener package, copied above.
+	rm -fr $(SENZING_LISTENER_DIRECTORY)
 
 .PHONY: docker-build-development-cache
 docker-build-development-cache: docker-rmi-for-build-development-cache
@@ -150,10 +157,6 @@ rm-target:
 
 .PHONY: clean
 clean: docker-rmi-for-build docker-rmi-for-build-development-cache docker-rmi-for-package rm-target
-
-.PHONE: delete-senzing-listener
-delete-senzing-listener:
-	rm -fr $(SENZING_LISTENER_DIRECTORY)
 # -----------------------------------------------------------------------------
 #  # Help
 # -----------------------------------------------------------------------------

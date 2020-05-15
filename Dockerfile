@@ -50,10 +50,6 @@ RUN export RISK_SCORING_CALCULATOR_JAR_VERSION=$(mvn "help:evaluate" -Dexpressio
  && cp /risk-scoring-calculator/target/risk-scoring-calculator-${RISK_SCORING_CALCULATOR_JAR_VERSION}.jar "/risk-scoring-calculator.jar" \
  && cp -r /risk-scoring-calculator/target/libs "/libs"
 
-# Clean up
-
-RUN make delete-senzing-listener
-
 # -----------------------------------------------------------------------------
 # Stage: Final
 # -----------------------------------------------------------------------------
