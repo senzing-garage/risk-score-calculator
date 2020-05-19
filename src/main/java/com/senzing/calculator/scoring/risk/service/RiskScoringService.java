@@ -2,6 +2,7 @@ package com.senzing.calculator.scoring.risk.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -355,7 +356,8 @@ public class RiskScoringService implements ListenerService {
     g2Service.postRiskScore(riskScoreDoc.toString());
     processCount++;
     if (processCount % 1000 == 0) {
-      System.out.println("Processed " + processCount + " records.");
+      Date current = new Date();
+      System.out.println(current.toInstant() + " - Processed " + processCount + " records.");
     }
   }
 
