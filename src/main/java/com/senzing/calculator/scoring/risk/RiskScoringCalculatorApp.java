@@ -26,8 +26,9 @@ public class RiskScoringCalculatorApp {
     Options options = new Options();
 
     // Add options.
-    // Options for g2.
+    // Options for risk scoring servive.
     options.addOption(CommandOptions.INI_FILE, true, "Path to the G2 ini file");
+    options.addOption(CommandOptions.JDBC_CONNECTION, true, "Connection string for the G2 database");
     // Options for consumer.
     options.addOption(ConsumerCommandOptions.MQ_HOST, true, "Host for RabbitMQ");
     options.addOption(ConsumerCommandOptions.MQ_USER, true, "User name for RabbitMQ");
@@ -40,6 +41,7 @@ public class RiskScoringCalculatorApp {
 
     JSONObject jsonRoot = new JSONObject();
     addCommandArgumentValue(jsonRoot, commandLine, CommandOptions.INI_FILE);
+    addCommandArgumentValue(jsonRoot, commandLine, CommandOptions.JDBC_CONNECTION);
     addCommandArgumentValue(jsonRoot, commandLine, ConsumerCommandOptions.MQ_HOST);
     addCommandArgumentValue(jsonRoot, commandLine, ConsumerCommandOptions.MQ_USER);
     addCommandArgumentValue(jsonRoot, commandLine, ConsumerCommandOptions.MQ_PASSWORD);

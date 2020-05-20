@@ -1,5 +1,6 @@
 package com.senzing.calculator.scoring.risk.service;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -14,6 +15,7 @@ import com.senzing.listener.senzing.service.ListenerService;
 import com.senzing.listener.senzing.service.exception.ServiceExecutionException;
 import com.senzing.listener.senzing.service.exception.ServiceSetupException;
 import com.senzing.calculator.scoring.risk.data.CommandOptions;
+import com.senzing.calculator.scoring.risk.service.db.DatabaseService;
 import com.senzing.calculator.scoring.risk.service.g2.G2ServiceExt;
 
 public class RiskScoringService implements ListenerService {
@@ -75,10 +77,13 @@ public class RiskScoringService implements ListenerService {
   private static final String POSSIBLY_SAME_VALUE = "POSSIBLY_SAME";
   private static final String IMDM_VALUE = "IMDM";
 
+  private static final int defaultLensID = 1;
+
   G2ServiceExt g2Service;
   List<String> f1Exclusive;
   List<String> f1Features;
   List<Fbovr> f1OverRideFType;
+  DatabaseService dbService;
 
   private static long processCount = 0;
 
@@ -86,32 +91,47 @@ public class RiskScoringService implements ListenerService {
   public void init(String config) throws ServiceSetupException {
     // Get configuration
     String g2IniFile = null;
+    String connectionString = null;
     try { 
       JSONObject configObject = new JSONObject(config);
       g2IniFile = configObject.optString(CommandOptions.INI_FILE);
+      connectionString = configObject.optString(CommandOptions.JDBC_CONNECTION);
     } catch (JSONException e) {
       throw new ServiceSetupException(e);
     }
+
+    if (g2IniFile == null || g2IniFile.isEmpty()) {
+      throw new ServiceSetupException(CommandOptions.INI_FILE + " missing from configuration");
+    }
+    if (connectionString == null || connectionString.isEmpty()) {
+      throw new ServiceSetupException(CommandOptions.JDBC_CONNECTION + " missing from configuration");
+    }
+
     g2Service = new G2ServiceExt();
     g2Service.init(g2IniFile);
 
     // Get the configuration and collect information from it.
     try {
       String g2Config = g2Service.exportConfig();
-      JSONObject jsonConfig = new JSONObject(g2Config);
-      JSONObject configRoot = jsonConfig.getJSONObject(G2_CONFIG_SECTION);
+      JSONObject g2JsonConfig = new JSONObject(g2Config);
+      JSONObject g2ConfigRoot = g2JsonConfig.getJSONObject(G2_CONFIG_SECTION);
       // Get the exclusive features.
       List<String> frequencies = Arrays.asList(F1E_TAG, F1ES_TAG);
-      f1Exclusive = extractFeatureTypesBasedOnFrequency(configRoot, frequencies);
+      f1Exclusive = extractFeatureTypesBasedOnFrequency(g2ConfigRoot, frequencies);
       // Get the override features.
-      f1OverRideFType = extractF1FeatureTypeOverride(configRoot, frequencies);
+      f1OverRideFType = extractF1FeatureTypeOverride(g2ConfigRoot, frequencies);
       // Get the F1 features.
       frequencies = Arrays.asList(F1_TAG);
-      f1Features = extractFeatureTypesBasedOnFrequency(configRoot, frequencies);
-    } catch (ServiceExecutionException | JSONException e) {
+      f1Features = extractFeatureTypesBasedOnFrequency(g2ConfigRoot, frequencies);
+
+      dbService = new DatabaseService();
+      dbService.init(connectionString);
+    } catch (ServiceExecutionException | JSONException | SQLException e) {
       throw new ServiceSetupException(e);
     }
-    System.out.println("Initalization complete");
+
+    Date current = new Date();
+    System.out.println(current.toInstant() + " - Initalization complete");
   }
 
   @Override
@@ -144,7 +164,17 @@ public class RiskScoringService implements ListenerService {
 
   private void processEntity(long entityID) throws ServiceExecutionException, JSONException {
     // Get the information about the entity from G2.
-    String entityData = g2Service.getEntity(entityID, true, false);
+    String entityData = null;
+    try {
+      entityData = g2Service.getEntity(entityID, true, false);
+    } catch (ServiceExecutionException e) {
+      System.out.println("Failed to get entity " + entityID);
+    }
+
+    if (entityData == null || entityData.isEmpty()) {
+      dbService.postRiskScore(entityID, defaultLensID, null, null, null);
+      return;
+    }
 
     // The F1, F1E, F1ES and their overrides are collected for later processing.
     List<Long> f1ExLibFeatIDs = new ArrayList<Long>();
@@ -293,7 +323,7 @@ public class RiskScoringService implements ListenerService {
       }
 
       // Data collection is done. Lets report the findings.
-      reportScoring(entityID, riskScorer);
+      reportScoring(entityID, defaultLensID, riskScorer);
     } catch (JSONException e) {
       throw new ServiceExecutionException(e);
     }
@@ -347,13 +377,13 @@ public class RiskScoringService implements ListenerService {
     return featJson.length() > 0;
   }
 
-  public void reportScoring(long entityID, RiskScorer riskScorer) throws JSONException, ServiceExecutionException {
+  public void reportScoring(long entityID, int lensID, RiskScorer riskScorer) throws JSONException, ServiceExecutionException {
     JSONObject riskScoreDoc = new JSONObject();
     riskScoreDoc.put("ENTITY_ID", entityID);
     riskScoreDoc.put("QUALITY_SCORE", riskScorer.getDataQualityScore().toString());
     riskScoreDoc.put("COLLISION_SCORE", riskScorer.getCollisionScore().toString());
     riskScoreDoc.put("REASON", riskScorer.getReason());
-    g2Service.postRiskScore(riskScoreDoc.toString());
+    dbService.postRiskScore(entityID, lensID, riskScorer.getDataQualityScore().toString(), riskScorer.getCollisionScore().toString(), riskScorer.getReason());
     processCount++;
     if (processCount % 1000 == 0) {
       Date current = new Date();

@@ -60,16 +60,6 @@ public class G2ServiceExt extends G2Service {
     return response.toString();
   }
 
-
-  public void postRiskScore(String riskScoreDoc) throws ServiceExecutionException {
-    int result = g2Diagnostic.postRiskScore(riskScoreDoc);
-    if (result != G2ServiceDefinitions.G2_VALID_RESULT) {
-      StringBuilder errorMessage = new StringBuilder("G2 engine failed to post risk scores: ");
-      errorMessage.append(g2DiagnosticErrorMessage(g2Diagnostic));
-      throw new ServiceExecutionException(errorMessage.toString());
-    }
-  }
-
   static protected String g2DiagnosticErrorMessage(G2Diagnostic g2Diagnostic) {
     return g2Diagnostic.getLastExceptionCode() + ", " + g2Diagnostic.getLastException();
   }
