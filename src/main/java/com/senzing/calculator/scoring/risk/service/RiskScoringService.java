@@ -85,10 +85,13 @@ public class RiskScoringService implements ListenerService {
   List<Fbovr> f1OverRideFType;
   DatabaseService dbService;
 
+  boolean serviceUp;
+
   private static long processCount = 0;
 
   @Override
   public void init(String config) throws ServiceSetupException {
+    serviceUp = false;
     // Get configuration
     String g2IniFile = null;
     String connectionString = null;
@@ -130,8 +133,14 @@ public class RiskScoringService implements ListenerService {
       throw new ServiceSetupException(e);
     }
 
+    serviceUp = true;
     Date current = new Date();
     System.out.println(current.toInstant() + " - Initalization complete");
+  }
+
+  @Override
+  public void cleanUp() {
+    g2Service.cleanUp();
   }
 
   @Override
@@ -168,6 +177,7 @@ public class RiskScoringService implements ListenerService {
     try {
       entityData = g2Service.getEntity(entityID, true, false);
     } catch (ServiceExecutionException e) {
+      System.out.println(e.getMessage());
       System.out.println("Failed to get entity " + entityID);
     }
 
@@ -399,4 +409,9 @@ public class RiskScoringService implements ListenerService {
     }
     return retVal;
   }
+
+  public boolean isServiceUp() {
+    return serviceUp;
+  }
+
 }

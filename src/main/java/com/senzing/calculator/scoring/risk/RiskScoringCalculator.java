@@ -19,11 +19,16 @@ public class RiskScoringCalculator {
       consumerType = "rabbitmq";
     }
 
-    ListenerService service = new RiskScoringService();
+    RiskScoringService service = new RiskScoringService();
     service.init(config);
 
     MessageConsumer consumer = MessageConsumerFactory.generateMessageConsumer(ConsumerType.valueOf(consumerType), config);
     consumer.consume(service);
+
+    while (service.isServiceUp()) {
+      Thread.sleep(30000);
+    }
+    service.cleanUp();
   }
 
   private String getConfigValue(String config, String key) throws JSONException {

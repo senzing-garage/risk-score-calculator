@@ -43,6 +43,13 @@ public class G2ServiceExt extends G2Service {
     }
   }
 
+  public void cleanUp() {
+    if (g2Diagnostic != null) {
+      g2Diagnostic.destroy();
+    }
+    super.cleanUp();
+  }
+
   public String findEntitiesByFeatureIDs(List<Long> ids, long entityID) throws JSONException, ServiceExecutionException {
     
     JSONObject root = new JSONObject();
