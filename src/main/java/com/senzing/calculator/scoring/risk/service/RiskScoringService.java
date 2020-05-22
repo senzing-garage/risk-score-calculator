@@ -1,14 +1,16 @@
 package com.senzing.calculator.scoring.risk.service;
 
+import java.io.StringReader;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
 import com.senzing.listener.senzing.data.Definitions;
 import com.senzing.listener.senzing.service.ListenerService;
@@ -96,10 +98,11 @@ public class RiskScoringService implements ListenerService {
     String g2IniFile = null;
     String connectionString = null;
     try { 
-      JSONObject configObject = new JSONObject(config);
-      g2IniFile = configObject.optString(CommandOptions.INI_FILE);
-      connectionString = configObject.optString(CommandOptions.JDBC_CONNECTION);
-    } catch (JSONException e) {
+      JsonReader reader = Json.createReader(new StringReader(config));
+      JsonObject configObject = reader.readObject();
+      g2IniFile = configObject.getString(CommandOptions.INI_FILE, "");
+      connectionString = configObject.getString(CommandOptions.JDBC_CONNECTION, "");
+    } catch (RuntimeException e) {
       throw new ServiceSetupException(e);
     }
 
@@ -116,8 +119,9 @@ public class RiskScoringService implements ListenerService {
     // Get the configuration and collect information from it.
     try {
       String g2Config = g2Service.exportConfig();
-      JSONObject g2JsonConfig = new JSONObject(g2Config);
-      JSONObject g2ConfigRoot = g2JsonConfig.getJSONObject(G2_CONFIG_SECTION);
+      JsonReader g2ConfigReader = Json.createReader(new StringReader(g2Config));
+      JsonObject g2JsonConfig = g2ConfigReader.readObject();
+      JsonObject g2ConfigRoot = g2JsonConfig.getJsonObject(G2_CONFIG_SECTION);
       // Get the exclusive features.
       List<String> frequencies = Arrays.asList(F1E_TAG, F1ES_TAG);
       f1Exclusive = extractFeatureTypesBasedOnFrequency(g2ConfigRoot, frequencies);
@@ -129,7 +133,7 @@ public class RiskScoringService implements ListenerService {
 
       dbService = new DatabaseService();
       dbService.init(connectionString);
-    } catch (ServiceExecutionException | JSONException | SQLException e) {
+    } catch (ServiceExecutionException | RuntimeException | SQLException e) {
       throw new ServiceSetupException(e);
     }
 
@@ -154,24 +158,25 @@ public class RiskScoringService implements ListenerService {
     //   ]
     // }
     try {
-      JSONObject json = new JSONObject(message);
+      JsonReader reader = Json.createReader(new StringReader(message));
+      JsonObject json = reader.readObject();
       // We are only interested in the entity ids from the AFFECTED_ENTITIES section.
-      JSONArray entities = json.getJSONArray(AFFECTED_ENTITIES_TAG);
+      JsonArray entities = json.getJsonArray(AFFECTED_ENTITIES_TAG);
       if (entities != null) {
-        for (int i = 0; i < entities.length(); i++) {
-          JSONObject entity = entities.getJSONObject(i);
+        for (int i = 0; i < entities.size(); i++) {
+          JsonObject entity = entities.getJsonObject(i);
           if (entity != null) {
-            Long entityID = entity.getLong(Definitions.ENTITY_ID_FIELD);
+            Long entityID = entity.getJsonNumber(Definitions.ENTITY_ID_FIELD).longValue();
             processEntity(entityID);
           }
         }
       }
-    } catch (JSONException e) {
+    } catch (RuntimeException e) {
       throw new ServiceExecutionException(e);
     }
   }
 
-  private void processEntity(long entityID) throws ServiceExecutionException, JSONException {
+  private void processEntity(long entityID) throws ServiceExecutionException {
     // Get the information about the entity from G2.
     String entityData = null;
     try {
@@ -192,18 +197,19 @@ public class RiskScoringService implements ListenerService {
     List<Long> f1LibFeatIDs = new ArrayList<Long>();
 
     try {
-      JSONObject rootObject = new JSONObject(entityData);
+      JsonReader reader = Json.createReader(new StringReader(entityData));
+      JsonObject rootObject = reader.readObject();
 
       // For collecting up scoring info
       RiskScorer riskScorer = new RiskScorer();
 
       // Data Quality check.
-      JSONObject resolvedEntity = rootObject.optJSONObject(RESOLVED_ENTITY_SECTION);
+      JsonObject resolvedEntity = optJsonObject(rootObject, RESOLVED_ENTITY_SECTION);
       if (resolvedEntity != null) {
 
         // Good part of the needed data is contained in the features.
         // Check quality of SSN.
-        JSONObject features = resolvedEntity.optJSONObject(FEATURES_SECTION);
+        JsonObject features = optJsonObject(resolvedEntity, FEATURES_SECTION);
         if (getFeatureCount(features, SSN_TAG) == 1) {
           riskScorer.setOneAndOnlyOneSSN(true);
         }
@@ -218,9 +224,9 @@ public class RiskScoringService implements ListenerService {
 
         // Check if any exclusive types have multiple values.
         for (String fType : f1Exclusive) {
-          JSONArray fTypeValues = features.optJSONArray(fType);
+          JsonArray fTypeValues = optJsonArray(features, fType);
           if (fTypeValues != null) {
-            if (fTypeValues.length() > 1) {
+            if (fTypeValues.size() > 1) {
               riskScorer.setMultipleExclusives(true);
             }
             // Collect up the feature ids for later.
@@ -230,11 +236,11 @@ public class RiskScoringService implements ListenerService {
 
         // Any feature overrides need to be checked. They can also be F1 exclusive.
         for (Fbovr fbOvr : f1OverRideFType) {
-          JSONArray fTypeValues = features.optJSONArray(fbOvr.getFType());
-          if (fTypeValues != null && fTypeValues.length() > 1) {
+          JsonArray fTypeValues = optJsonArray(features, fbOvr.getFType());
+          if (fTypeValues != null && fTypeValues.size() > 1) {
             int cnt = 0;
-            for (int i = 0; i < fTypeValues.length(); i++) {
-              String uType = fTypeValues.getJSONObject(i).optString(UTYPE_CODE_TAG);
+            for (int i = 0; i < fTypeValues.size(); i++) {
+              String uType = fTypeValues.getJsonObject(i).getString(UTYPE_CODE_TAG, null);
               if (uType != null && uType.contentEquals(fbOvr.getUType())) {
                 cnt++;
               }
@@ -250,7 +256,7 @@ public class RiskScoringService implements ListenerService {
 
         // Collect up F1 feature values. They are used later.
         for (String fType : f1Features) {
-          JSONArray fTypeValues = features.optJSONArray(fType);
+          JsonArray fTypeValues = optJsonArray(features, fType);
           if (fTypeValues != null) {
             collectLibFeatureIDs(fTypeValues, f1LibFeatIDs);
           }
@@ -268,10 +274,10 @@ public class RiskScoringService implements ListenerService {
 //        }
 
         // Handle any override of risk scores.
-        JSONArray scoreOverride = features.optJSONArray(RISK_SCORE_OVERRIDE_TAG);
+        JsonArray scoreOverride = optJsonArray(features, RISK_SCORE_OVERRIDE_TAG);
         if (scoreOverride != null) {
-          for (int i = 0; i < scoreOverride.length(); i++) {
-            String featDesc = scoreOverride.getJSONObject(i).optString(FEAT_DESC_TAG);
+          for (int i = 0; i < scoreOverride.size(); i++) {
+            String featDesc = scoreOverride.getJsonObject(i).getString(FEAT_DESC_TAG, "");
             riskScorer.setScoreOverride(featDesc);
           }
         }
@@ -302,16 +308,16 @@ public class RiskScoringService implements ListenerService {
       riskScorer.setNoSharedF1(noSharedF1s);
 
       // Check if the related entities section reveals any ambiguous relationships (count as red).
-      JSONArray relatedEntities = rootObject.optJSONArray(RELATED_ENTITIES_SECTION);
+      JsonArray relatedEntities = optJsonArray(rootObject, RELATED_ENTITIES_SECTION);
       if (relatedEntities != null) {
         boolean noPossibleMatch = true;
-        for (int i = 0; i < relatedEntities.length(); i++) {
-          JSONObject entity = relatedEntities.getJSONObject(i);
+        for (int i = 0; i < relatedEntities.size(); i++) {
+          JsonObject entity = relatedEntities.getJsonObject(i);
 
           if (entity.getInt(IS_AMBIGUOUS_TAG) > 0) {
             riskScorer.setAmbiguous(true);
           }
-          String matchLevelCode = entity.optString(MATCH_LEVEL_CODE_TAG);
+          String matchLevelCode = entity.getString(MATCH_LEVEL_CODE_TAG, null);
           if (matchLevelCode != null && matchLevelCode.equals(POSSIBLY_SAME_VALUE)) {
             noPossibleMatch = false;
           }
@@ -320,11 +326,11 @@ public class RiskScoringService implements ListenerService {
       }
 
       // Do we have iMDM data source in this entity (counts as green).
-      JSONArray records = resolvedEntity.optJSONArray(RECORDS_SECTION);
+      JsonArray records = optJsonArray(resolvedEntity, RECORDS_SECTION);
       if (records != null) {
-        for (int i = 0; i < records.length(); i++) {
-          JSONObject record = records.getJSONObject(i);
-          String dataSource = record.optString(DATA_SOURCE_TAG);
+        for (int i = 0; i < records.size(); i++) {
+          JsonObject record = records.getJsonObject(i);
+          String dataSource = record.getString(DATA_SOURCE_TAG, null);
           if (dataSource != null && dataSource.toUpperCase().equals(IMDM_VALUE)) {
             riskScorer.setSourceIMDM(true);
             break;
@@ -334,17 +340,17 @@ public class RiskScoringService implements ListenerService {
 
       // Data collection is done. Lets report the findings.
       reportScoring(entityID, defaultLensID, riskScorer);
-    } catch (JSONException e) {
+    } catch (RuntimeException e) {
       throw new ServiceExecutionException(e);
     }
   }
 
-  private List<String> extractFeatureTypesBasedOnFrequency(JSONObject configRoot, List<String> fqs) throws JSONException {
+  private List<String> extractFeatureTypesBasedOnFrequency(JsonObject configRoot, List<String> fqs) {
     List<String> features = new ArrayList<>();
-    JSONArray fTypes = configRoot.getJSONArray(CFG_FTYPE_SECTION);
-    for (int i = 0; i < fTypes.length(); i++) {
-      JSONObject fType = fTypes.getJSONObject(i);
-      String frequency = fType.optString(FTYPE_FREQ_TAG);
+    JsonArray fTypes = configRoot.getJsonArray(CFG_FTYPE_SECTION);
+    for (int i = 0; i < fTypes.size(); i++) {
+      JsonObject fType = fTypes.getJsonObject(i);
+      String frequency = fType.getString(FTYPE_FREQ_TAG, "");
       if (fqs.contains(frequency)) {
         features.add(fType.getString(FTYPE_CODE_TAG));
       }
@@ -352,12 +358,12 @@ public class RiskScoringService implements ListenerService {
     return features;
   }
 
-  private List<Fbovr> extractF1FeatureTypeOverride(JSONObject configRoot, List<String> fqs) throws JSONException {
+  private List<Fbovr> extractF1FeatureTypeOverride(JsonObject configRoot, List<String> fqs) {
     List<Fbovr> overRideFeats = new ArrayList<>();
-    JSONArray fTypes = configRoot.getJSONArray(CFG_FBOVR_SECTION);
-    for (int i = 0; i < fTypes.length(); i++) {
-      JSONObject fType = fTypes.getJSONObject(i);
-      String frequency = fType.optString(FTYPE_FREQ_TAG);
+    JsonArray fTypes = configRoot.getJsonArray(CFG_FBOVR_SECTION);
+    for (int i = 0; i < fTypes.size(); i++) {
+      JsonObject fType = fTypes.getJsonObject(i);
+      String frequency = fType.getString(FTYPE_FREQ_TAG, "");
       if (fqs.contains(frequency)) {
         Fbovr fbovr = new Fbovr();
         fbovr.setFType(fType.getString(FTYPE_CODE_TAG));
@@ -368,32 +374,40 @@ public class RiskScoringService implements ListenerService {
     return overRideFeats;
   }
 
-  private void collectLibFeatureIDs(JSONArray fTypeValues, List<Long> libFeatIDs) throws JSONException {
-    for (int i = 0; i < fTypeValues.length(); i++) {
-      JSONObject fTypeObject = fTypeValues.getJSONObject(i);
-      Long featID = fTypeObject.getLong(LIB_FEAT_ID_TAG);
+  private void collectLibFeatureIDs(JsonArray fTypeValues, List<Long> libFeatIDs) {
+    for (int i = 0; i < fTypeValues.size(); i++) {
+      JsonObject fTypeObject = fTypeValues.getJsonObject(i);
+      Long featID = fTypeObject.getJsonNumber(LIB_FEAT_ID_TAG).longValue();
       if (featID != null) {
         libFeatIDs.add(featID);
       }
     }
   }
 
-  private String getFeaturesForEntity(List<Long> feats, long entityID) throws JSONException, ServiceExecutionException {
-    return g2Service.findEntitiesByFeatureIDs(feats, entityID);
+  private String getFeaturesForEntity(List<Long> feats, long entityID) throws ServiceExecutionException {
+    try {
+      return g2Service.findEntitiesByFeatureIDs(feats, entityID);
+    } catch (RuntimeException e) {
+      throw new ServiceExecutionException(e);
+    }
   }
 
-  private boolean checkForSharedFeatures(String jsonDoc) throws JSONException {
-    JSONArray featJson = new JSONArray(jsonDoc);
-    return featJson.length() > 0;
+  private boolean checkForSharedFeatures(String jsonDoc) throws ServiceExecutionException {
+    try {
+      JsonReader reader = Json.createReader(new StringReader(jsonDoc));
+      JsonArray featJson = reader.readArray();
+      return featJson.size() > 0;
+    } catch (RuntimeException e) {
+      throw new ServiceExecutionException(e);
+    }
   }
 
-  public void reportScoring(long entityID, int lensID, RiskScorer riskScorer) throws JSONException, ServiceExecutionException {
-    JSONObject riskScoreDoc = new JSONObject();
-    riskScoreDoc.put("ENTITY_ID", entityID);
-    riskScoreDoc.put("QUALITY_SCORE", riskScorer.getDataQualityScore().toString());
-    riskScoreDoc.put("COLLISION_SCORE", riskScorer.getCollisionScore().toString());
-    riskScoreDoc.put("REASON", riskScorer.getReason());
-    dbService.postRiskScore(entityID, lensID, riskScorer.getDataQualityScore().toString(), riskScorer.getCollisionScore().toString(), riskScorer.getReason());
+  public void reportScoring(long entityID, int lensID, RiskScorer riskScorer) throws ServiceExecutionException {
+    try {
+      dbService.postRiskScore(entityID, lensID, riskScorer.getDataQualityScore().toString(), riskScorer.getCollisionScore().toString(), riskScorer.getReason());
+    } catch (RuntimeException e) {
+      throw new ServiceExecutionException(e);
+    }
     processCount++;
     if (processCount % 1000 == 0) {
       Date current = new Date();
@@ -401,11 +415,29 @@ public class RiskScoringService implements ListenerService {
     }
   }
 
-  private int getFeatureCount(JSONObject features, String key) {
-    JSONArray value = features.optJSONArray(key);
+  private int getFeatureCount(JsonObject features, String key) {
+    JsonArray value = optJsonArray(features, key);
     int retVal = 0;
     if (value != null) {
-      retVal = value.length();
+      retVal = value.size();
+    }
+    return retVal;
+  }
+
+  private JsonObject optJsonObject(JsonObject jsonObject, String key) {
+    JsonObject retVal = null;
+    try {
+      retVal = jsonObject.getJsonObject(key);
+    } catch (Exception e) {
+    }
+    return retVal;
+  }
+
+  private JsonArray optJsonArray(JsonObject jsonObject, String key) {
+    JsonArray retVal = null;
+    try {
+      retVal = jsonObject.getJsonArray(key);
+    } catch (Exception e) {
     }
     return retVal;
   }

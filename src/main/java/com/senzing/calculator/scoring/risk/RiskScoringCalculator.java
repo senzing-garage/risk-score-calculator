@@ -1,13 +1,15 @@
 package com.senzing.calculator.scoring.risk;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.io.StringReader;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
 import com.senzing.listener.senzing.communication.ConsumerType;
 import com.senzing.listener.senzing.communication.MessageConsumer;
 import com.senzing.listener.senzing.communication.MessageConsumerFactory;
 import com.senzing.listener.senzing.data.ConsumerCommandOptions;
-import com.senzing.listener.senzing.service.ListenerService;
 import com.senzing.calculator.scoring.risk.service.RiskScoringService;
 
 public class RiskScoringCalculator {
@@ -31,8 +33,9 @@ public class RiskScoringCalculator {
     service.cleanUp();
   }
 
-  private String getConfigValue(String config, String key) throws JSONException {
-    JSONObject jsonConfig = new JSONObject(config);
-    return jsonConfig.optString(key);
+  private String getConfigValue(String config, String key) {
+    JsonReader reader = Json.createReader(new StringReader(config));
+    JsonObject jsonConfig = reader.readObject();
+    return jsonConfig.getString(key, null);
   }
 }

@@ -3,9 +3,8 @@ package com.senzing.calculator.scoring.risk.service.g2;
 import java.io.IOException;
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 
 import com.senzing.g2.engine.G2Diagnostic;
 import com.senzing.g2.engine.G2DiagnosticJNI;
@@ -31,7 +30,7 @@ public class G2ServiceExt extends G2Service {
     String configData = null;
     try {
       configData = getG2IniDataAsJson(iniFile);
-    } catch (IOException | JSONException e) {
+    } catch (IOException | RuntimeException e) {
       throw new ServiceSetupException(e);
     }
     g2Diagnostic = new G2DiagnosticJNI();
@@ -50,15 +49,14 @@ public class G2ServiceExt extends G2Service {
     super.cleanUp();
   }
 
-  public String findEntitiesByFeatureIDs(List<Long> ids, long entityID) throws JSONException, ServiceExecutionException {
+  public String findEntitiesByFeatureIDs(List<Long> ids, long entityID) throws ServiceExecutionException {
     
-    JSONObject root = new JSONObject();
-    root.put("ENTITY_ID", entityID);
-    JSONArray idList = new JSONArray();
-    ids.stream().forEach(id -> idList.put(id));
-    root.put("LIB_FEAT_IDS", idList);
+    JsonObjectBuilder rootObject = Json.createObjectBuilder();
+    rootObject.add("ENTITY_ID", entityID);
+    rootObject.add("LIB_FEAT_IDS", Json.createArrayBuilder(ids).build());
     StringBuffer response = new StringBuffer();
-    int result = g2Diagnostic.findEntitiesByFeatureIDs(root.toString(), response);
+    String outStr = rootObject.build().toString();
+    int result = g2Diagnostic.findEntitiesByFeatureIDs(outStr, response);
     if (result != G2ServiceDefinitions.G2_VALID_RESULT) {
       StringBuilder errorMessage = new StringBuilder("G2 engine failed to find entities for features: ");
       errorMessage.append(g2DiagnosticErrorMessage(g2Diagnostic));

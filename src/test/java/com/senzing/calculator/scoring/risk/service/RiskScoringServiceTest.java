@@ -3,27 +3,17 @@ package com.senzing.calculator.scoring.risk.service;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.io.IOUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.senzing.listener.senzing.service.exception.ServiceExecutionException;
@@ -31,8 +21,6 @@ import com.senzing.listener.senzing.service.exception.ServiceSetupException;
 import com.senzing.listener.senzing.service.g2.G2Service;
 import com.senzing.calculator.scoring.risk.service.db.DatabaseService;
 import com.senzing.calculator.scoring.risk.service.g2.G2ServiceExt;
-
-import static org.mockito.Mockito.*;
 
 import mockit.Mock;
 import mockit.MockUp;
@@ -75,7 +63,7 @@ public class RiskScoringServiceTest {
       public void init(String iniFile) throws ServiceSetupException {
       }
       @Mock
-      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID) throws JSONException, ServiceExecutionException {
+      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID) throws ServiceExecutionException {
         return "[]";
       }
     };
@@ -190,7 +178,7 @@ public class RiskScoringServiceTest {
     };
     new MockUp<G2ServiceExt>() {
       @Mock
-      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID) throws JSONException, ServiceExecutionException {
+      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID) throws ServiceExecutionException {
         return "[{\"RES_ENTIT_ID\":120,\"UTYPE\":\"\",\"FTYPE_ID\":15}]";
       }
     };

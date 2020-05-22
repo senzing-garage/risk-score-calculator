@@ -3,9 +3,8 @@ package com.senzing.calculator.scoring.risk.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 
 /**
  * This class collects and scores risk based on following criteria:
@@ -212,7 +211,7 @@ public class RiskScorer {
    * 
    * @throws JSONException
    */
-  public String getReason() throws JSONException {
+  public String getReason() {
     List<String> qualityReasons = new ArrayList<>();
     List<String> collisionReasons = new ArrayList<>();
 
@@ -281,16 +280,11 @@ public class RiskScorer {
       }
     }
 
-    JSONObject rootObject = new JSONObject();
-    JSONArray qualityArray = new JSONArray();
-    qualityReasons.stream().forEach(qr -> qualityArray.put(qr));
-    JSONArray collisionArray = new JSONArray();
-    collisionReasons.stream().forEach(qr -> collisionArray.put(qr));
-    
-    rootObject.put("Quality", qualityArray);
-    rootObject.put("Collision", collisionArray);
+    JsonObjectBuilder rootObject = Json.createObjectBuilder();
+    rootObject.add("Quality", Json.createArrayBuilder(qualityReasons).build());
+    rootObject.add("Collision", Json.createArrayBuilder(collisionReasons).build());
 
-    return rootObject.toString();
+    return rootObject.build().toString();
   }
 
   @Override

@@ -5,9 +5,9 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.json.JSONException;
-import org.json.JSONObject;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import com.senzing.calculator.scoring.risk.data.CommandOptions;
 import com.senzing.listener.senzing.data.ConsumerCommandOptions;
 
@@ -22,7 +22,7 @@ public class RiskScoringCalculatorApp {
     }
   }
 
-  private static String processArguments(String[] args) throws ParseException, JSONException {
+  private static String processArguments(String[] args) throws ParseException {
     Options options = new Options();
 
     // Add options.
@@ -39,7 +39,7 @@ public class RiskScoringCalculatorApp {
     CommandLineParser parser = new DefaultParser();
     CommandLine commandLine = parser.parse(options, args);
 
-    JSONObject jsonRoot = new JSONObject();
+    JsonObjectBuilder jsonRoot = Json.createObjectBuilder();
     addCommandArgumentValue(jsonRoot, commandLine, CommandOptions.INI_FILE);
     addCommandArgumentValue(jsonRoot, commandLine, CommandOptions.JDBC_CONNECTION);
     addCommandArgumentValue(jsonRoot, commandLine, ConsumerCommandOptions.MQ_HOST);
@@ -48,12 +48,12 @@ public class RiskScoringCalculatorApp {
     addCommandArgumentValue(jsonRoot, commandLine, ConsumerCommandOptions.MQ_QUEUE);
     addCommandArgumentValue(jsonRoot, commandLine, ConsumerCommandOptions.CONSUMER_TYPE);
 
-    return jsonRoot.toString();
+    return jsonRoot.build().toString();
   }
 
-  private static void addCommandArgumentValue(JSONObject jsonRoot, CommandLine commandLine, String key) throws JSONException {
+  private static void addCommandArgumentValue(JsonObjectBuilder jsonRoot, CommandLine commandLine, String key) {
     if (commandLine.hasOption(key)) {
-      jsonRoot.put(key, commandLine.getOptionValue(key));
+      jsonRoot.add(key, commandLine.getOptionValue(key));
     }
   }
 }
