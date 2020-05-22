@@ -59,6 +59,14 @@ public class DatabaseService {
       } catch (SQLException e1) {
         throw new ServiceExecutionException(e1);
       }
+    } finally {
+      try {
+        if (postStatement != null && !postStatement.isClosed()) {
+          postStatement.close();
+        }
+      } catch (SQLException e) {
+        throw new ServiceExecutionException(e);
+      }
     }
     try {
       connection.commit();
