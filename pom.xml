@@ -84,6 +84,15 @@
     </dependency>
   </dependencies>
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+          <excludes>
+            <exclude>risk-scoring-calculator.properties</exclude>
+          </excludes>
+        <filtering>false</filtering>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -106,6 +115,9 @@
                 com.senzing.calculator.scoring.risk.RiskScoringCalculatorApp
               </mainClass>
             </manifest>
+            <manifestEntries>
+              <Class-Path>conf/</Class-Path>
+            </manifestEntries>
           </archive>
         </configuration>
       </plugin>
@@ -128,6 +140,34 @@
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.0.2</version>
+        <configuration>
+          <encoding>UTF-8</encoding>
+        </configuration>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>install</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${basedir}/target/conf</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>src/main/resources</directory>
+                  <includes>
+                    <include>**/*.properties</include>
+                  </includes>
+                </resource>
+              </resources>
             </configuration>
           </execution>
         </executions>

@@ -182,8 +182,14 @@ public class RiskScoringService implements ListenerService {
     try {
       entityData = g2Service.getEntity(entityID, true, false);
     } catch (ServiceExecutionException e) {
-      System.out.println(e.getMessage());
-      System.out.println("Failed to get entity " + entityID);
+      if (e.getMessage().contains("Unknown resolved entity value")) {
+        System.out.println(e.getMessage());
+        System.out.println("Failed to get entity " + entityID);
+      } else {
+        // Bail out if any other error
+        e.printStackTrace();
+        System.exit(-2);
+      }
     }
 
     if (entityData == null || entityData.isEmpty()) {
