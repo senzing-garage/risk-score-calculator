@@ -180,18 +180,17 @@ public class RiskScoringService implements ListenerService {
     // Get the information about the entity from G2.
     String entityData = null;
     try {
-      entityData = g2Service.getEntity(entityID, true, false);
+      entityData = g2Service.getEntity(entityID, false, false);
     } catch (ServiceExecutionException e) {
       if (e.getMessage().contains("Unknown resolved entity value")) {
-        System.out.println(e.getMessage());
-        System.out.println("Failed to get entity " + entityID);
+        System.err.println(e.getMessage());
+        System.err.println("Failed to get entity " + entityID);
       } else {
         // Bail out if any other error
         e.printStackTrace();
         System.exit(-2);
       }
     }
-
     if (entityData == null || entityData.isEmpty()) {
       dbService.postRiskScore(entityID, defaultLensID, null, null, null);
       return;

@@ -201,7 +201,7 @@ public class RiskScoringServiceTest {
     new MockUp<G2Service>() {
       @Mock
       public String getEntity(long g2EntiyId, boolean includeFullFeatures, boolean includeFeatureStats) throws ServiceExecutionException {
-        return ENTITY_MESSAGE_6;
+        return ENTITY_MESSAGE_8;
       }
     };
     new MockUp<DatabaseService>() {
@@ -245,7 +245,7 @@ public class RiskScoringServiceTest {
     new MockUp<G2Service>() {
       @Mock
       public String getEntity(long g2EntiyId, boolean includeFullFeatures, boolean includeFeatureStats) throws ServiceExecutionException {
-        return ENTITY_MESSAGE_8;
+        return ENTITY_MESSAGE_6;
       }
     };
     new MockUp<DatabaseService>() {

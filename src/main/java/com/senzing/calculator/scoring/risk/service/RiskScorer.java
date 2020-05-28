@@ -245,10 +245,10 @@ public class RiskScorer {
         qualityReasons.add(NO_IMDM);
       }
       if (!oneAndOnlyOneDOB) {
-        qualityReasons.add(NOT_ONE_SSN);
+        qualityReasons.add(NOT_ONE_DOB);
       }
       if (!oneAndOnlyOneSSN) {
-        qualityReasons.add(NOT_ONE_DOB);
+        qualityReasons.add(NOT_ONE_SSN);
       }
     }
 
