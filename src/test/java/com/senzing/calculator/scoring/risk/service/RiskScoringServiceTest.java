@@ -273,9 +273,9 @@ public class RiskScoringServiceTest {
     new MockUp<DatabaseService>() {
       @Mock
       public void postRiskScore(long entityID, int lensID, String qualityScore, String collisionScore, String reason) {
-        assertThat(qualityScore.toString(), is(equalTo("Yellow")));
-        assertThat(collisionScore.toString(), is(equalTo("Yellow")));
-        assertThat(reason.toString(), containsString("Not one and only one SSN"));
+        assertThat(qualityScore.toString(), is(equalTo("Red")));
+        assertThat(collisionScore.toString(), is(equalTo("Red")));
+        assertThat(reason.toString(), containsString("More than one F1E or F1E"));
       }
     };
     RiskScoringService service = new RiskScoringService();

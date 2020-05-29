@@ -52,6 +52,7 @@ public class RiskScoringService implements ListenerService {
   private static final String CFG_FTYPE_SECTION = "CFG_FTYPE";
   private static final String FTYPE_CODE_TAG = "FTYPE_CODE";
   private static final String FTYPE_FREQ_TAG = "FTYPE_FREQ";
+  private static final String FTYPE_EXCL_TAG = "FTYPE_EXCL";
   // Configuration values.
   private static final String F1_TAG = "F1";
   private static final String F1E_TAG = "F1E";
@@ -78,6 +79,7 @@ public class RiskScoringService implements ListenerService {
   // Values.
   private static final String POSSIBLY_SAME_VALUE = "POSSIBLY_SAME";
   private static final String IMDM_VALUE = "IMDM";
+  private static final String YES_VALUE = "YES";
 
   private static final int defaultLensID = 1;
 
@@ -123,12 +125,11 @@ public class RiskScoringService implements ListenerService {
       JsonObject g2JsonConfig = g2ConfigReader.readObject();
       JsonObject g2ConfigRoot = g2JsonConfig.getJsonObject(G2_CONFIG_SECTION);
       // Get the exclusive features.
-      List<String> frequencies = Arrays.asList(F1E_TAG, F1ES_TAG);
-      f1Exclusive = extractFeatureTypesBasedOnFrequency(g2ConfigRoot, frequencies);
+      f1Exclusive = extractF1ExclusiveFeatures(g2ConfigRoot);
       // Get the override features.
-      f1OverRideFType = extractF1FeatureTypeOverride(g2ConfigRoot, frequencies);
+      f1OverRideFType = extractF1FeatureTypeOverride(g2ConfigRoot);
       // Get the F1 features.
-      frequencies = Arrays.asList(F1_TAG);
+      List<String> frequencies = Arrays.asList(F1_TAG);
       f1Features = extractFeatureTypesBasedOnFrequency(g2ConfigRoot, frequencies);
 
       dbService = new DatabaseService();
@@ -363,13 +364,30 @@ public class RiskScoringService implements ListenerService {
     return features;
   }
 
-  private List<Fbovr> extractF1FeatureTypeOverride(JsonObject configRoot, List<String> fqs) {
+  private List<String> extractF1ExclusiveFeatures(JsonObject configRoot) {
+    List<String> features = new ArrayList<>();
+    List<String> fqs = Arrays.asList(F1_TAG, F1E_TAG, F1ES_TAG);
+    JsonArray fTypes = configRoot.getJsonArray(CFG_FTYPE_SECTION);
+    for (int i = 0; i < fTypes.size(); i++) {
+      JsonObject fType = fTypes.getJsonObject(i);
+      String frequency = fType.getString(FTYPE_FREQ_TAG, "");
+      String Exclusive = fType.getString(FTYPE_EXCL_TAG, "");
+      if (fqs.contains(frequency) && Exclusive.toUpperCase().equals(YES_VALUE)) {
+        features.add(fType.getString(FTYPE_CODE_TAG));
+      }
+    }
+    return features;
+  }
+
+  private List<Fbovr> extractF1FeatureTypeOverride(JsonObject configRoot) {
     List<Fbovr> overRideFeats = new ArrayList<>();
+    List<String> fqs = Arrays.asList(F1_TAG, F1E_TAG, F1ES_TAG);
     JsonArray fTypes = configRoot.getJsonArray(CFG_FBOVR_SECTION);
     for (int i = 0; i < fTypes.size(); i++) {
       JsonObject fType = fTypes.getJsonObject(i);
       String frequency = fType.getString(FTYPE_FREQ_TAG, "");
-      if (fqs.contains(frequency)) {
+      String Exclusive = fType.getString(FTYPE_EXCL_TAG, "");
+      if (fqs.contains(frequency) && Exclusive.toUpperCase().equals(YES_VALUE)) {
         Fbovr fbovr = new Fbovr();
         fbovr.setFType(fType.getString(FTYPE_CODE_TAG));
         fbovr.setUType(fType.getString(UTYPE_CODE_TAG));
