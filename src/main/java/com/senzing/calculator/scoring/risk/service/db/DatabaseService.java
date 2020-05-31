@@ -9,11 +9,12 @@ import com.senzing.listener.senzing.service.exception.ServiceExecutionException;
 
 public class DatabaseService {
 
-  Connection connection;
-  String dbType;
+  private Connection connection;
+  private String upsertQuery;
+  private PreparedStatement postStatement;
+  private PreparedStatement deleteStatement;
 
   private static final String MYSQL_TYPE = "mysql";
-  private static final String OTHER_TYPE = "other";
 
   private final static String DELETE_QUERY = "DELETE FROM RES_RISK_SCORE WHERE RES_ENT_ID = ? AND LENS_ID = ?";
   private final static String UPSERT_QUERY = "INSERT INTO RES_RISK_SCORE (RES_ENT_ID, LENS_ID, QUALITY_STATE, COLLISION_STATE, REASON) "
@@ -30,42 +31,32 @@ public class DatabaseService {
     connection = DriverManager.getConnection(url);
     connection.setAutoCommit(false);
     if (url.contains(MYSQL_TYPE)) {
-      dbType = MYSQL_TYPE;
+      upsertQuery = UPSERT_QUERY_MYSQL;
     } else {
-      dbType = OTHER_TYPE;
+      upsertQuery = UPSERT_QUERY;
     }
-    
+    postStatement = connection.prepareStatement(upsertQuery);
+    deleteStatement = connection.prepareStatement(DELETE_QUERY);
   }
 
   public void postRiskScore(long entityID, int lensID, String qualityScore, String collisionScore, String reason)
       throws ServiceExecutionException {
 
-    PreparedStatement postStatement = null;
-
     try {
       if (qualityScore == null && collisionScore == null) {
-        postStatement = connection.prepareStatement(DELETE_QUERY);
         int index = 1;
-        postStatement.setLong(index++, entityID);
-        postStatement.setInt(index++, lensID);
+        deleteStatement.setLong(index++, entityID);
+        deleteStatement.setInt(index++, lensID);
+        deleteStatement.execute();
       } else {
-        String query = dbType.equals(MYSQL_TYPE) ? UPSERT_QUERY_MYSQL : UPSERT_QUERY;
-        postStatement = createUpsertStatement(query, entityID, lensID, qualityScore, collisionScore, reason);
+        populateUpsertStatement(postStatement, entityID, lensID, qualityScore, collisionScore, reason);
+        postStatement.execute();
       }
-      postStatement.execute();
     } catch (SQLException e) {
       try {
         connection.rollback();
       } catch (SQLException e1) {
         throw new ServiceExecutionException(e1);
-      }
-    } finally {
-      try {
-        if (postStatement != null && !postStatement.isClosed()) {
-          postStatement.close();
-        }
-      } catch (SQLException e) {
-        throw new ServiceExecutionException(e);
       }
     }
     try {
@@ -75,9 +66,15 @@ public class DatabaseService {
     }
   }
 
-  private PreparedStatement createUpsertStatement(String query, long entityID, int lensID, String qualityScore, String collisionScore,
+  public void refreshStatements() throws SQLException {
+    postStatement.close();
+    deleteStatement.close();
+    postStatement = connection.prepareStatement(upsertQuery);
+    deleteStatement = connection.prepareStatement(DELETE_QUERY);
+  }
+
+  private PreparedStatement populateUpsertStatement(PreparedStatement statement, long entityID, int lensID, String qualityScore, String collisionScore,
       String reason) throws SQLException {
-    PreparedStatement statement = connection.prepareStatement(query);
     int index = 1;
     statement.setLong(index++, entityID);
     statement.setInt(index++, lensID);
