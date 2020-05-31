@@ -26,7 +26,7 @@ BASE_IMAGE ?= senzing/senzing-base:latest
 BASE_BUILDER_IMAGE ?= senzing/base-image-debian:1.0.3
 DOCKER_IMAGE_PACKAGE := $(GIT_REPOSITORY_NAME)-package:$(GIT_VERSION)
 DOCKER_IMAGE_TAG ?= $(GIT_REPOSITORY_NAME):$(GIT_VERSION)
-DOCKER_IMAGE_NAME := senzing/risk-scoring-calculator
+DOCKER_IMAGE_NAME := oskar700/risk-scoring-calculator
 
 # Misc.
 
