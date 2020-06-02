@@ -5,7 +5,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -198,9 +200,9 @@ public class RiskScoringService implements ListenerService {
     }
 
     // The F1, F1E, F1ES and their overrides are collected for later processing.
-    List<Long> f1ExLibFeatIDs = new ArrayList<Long>();
-    List<Long> f1OvrExLibFeatIDs = new ArrayList<Long>();
-    List<Long> f1LibFeatIDs = new ArrayList<Long>();
+    Map<Long, FeatData> f1ExLibFeats = new HashMap<>();
+    Map<Long, FeatData> f1OvrExLibFeats = new HashMap<>();
+    Map<Long, FeatData> f1LibFeats = new HashMap<>();
 
     try {
       JsonReader reader = Json.createReader(new StringReader(entityData));
@@ -233,10 +235,11 @@ public class RiskScoringService implements ListenerService {
           JsonArray fTypeValues = optJsonArray(features, fType);
           if (fTypeValues != null) {
             if (fTypeValues.size() > 1) {
-              riskScorer.setMultipleExclusives(true);
+              List<String> featList = getMultiValueFeatures(fTypeValues);
+              riskScorer.addMultipleExclusives(fType, featList);
             }
-            // Collect up the feature ids for later.
-            collectLibFeatureIDs(fTypeValues, f1ExLibFeatIDs);
+            // Collect up the feature values for later.
+            collectLibFeatures(fType, fTypeValues, f1ExLibFeats);
           }
         }
 
@@ -244,19 +247,15 @@ public class RiskScoringService implements ListenerService {
         for (Fbovr fbOvr : f1OverRideFType) {
           JsonArray fTypeValues = optJsonArray(features, fbOvr.getFType());
           if (fTypeValues != null && fTypeValues.size() > 1) {
-            int cnt = 0;
             for (int i = 0; i < fTypeValues.size(); i++) {
               String uType = fTypeValues.getJsonObject(i).getString(UTYPE_CODE_TAG, null);
               if (uType != null && uType.contentEquals(fbOvr.getUType())) {
-                cnt++;
+                List<String> featList = getMultiValueFeatures(fTypeValues);
+                riskScorer.addMultipleExclusives(fbOvr.getFType(), featList);
               }
             }
-            if (cnt > 1) {
-              riskScorer.setMultipleExclusives(true);
-              break;
-            }
-            // Collect up the feature ids for later.
-            collectLibFeatureIDs(fTypeValues, f1OvrExLibFeatIDs);
+            // Collect up the feature values for later.
+            collectLibFeatures(fbOvr.getFType(), fTypeValues, f1OvrExLibFeats);
           }
         }
 
@@ -264,7 +263,7 @@ public class RiskScoringService implements ListenerService {
         for (String fType : f1Features) {
           JsonArray fTypeValues = optJsonArray(features, fType);
           if (fTypeValues != null) {
-            collectLibFeatureIDs(fTypeValues, f1LibFeatIDs);
+            collectLibFeatures(fType, fTypeValues, f1LibFeats);
           }
         }
         // OT-TODO: This section is under discussion and its fate will be decided later.
@@ -290,28 +289,35 @@ public class RiskScoringService implements ListenerService {
       }
 
       // Now check if any of the F1 features are shared with other entities.
-      boolean noSharedF1s = true;
-      if (f1ExLibFeatIDs.size() > 0) {
-        String results = getFeaturesForEntity(f1ExLibFeatIDs, entityID);
-        if (checkForSharedFeatures(results)) {
-          riskScorer.setSharedF1Exclusives(true);
-          noSharedF1s = false;
+      if (f1ExLibFeats.size() > 0) {
+        List<Long> ids = new ArrayList<Long>();
+        ids.addAll(f1ExLibFeats.keySet());
+        String results = getFeaturesForEntity(ids, entityID);
+        List<FeatData> featData = checkForSharedFeatures(results, f1ExLibFeats);
+        if (!featData.isEmpty()) {
+          riskScorer.addSharedExclusives(featData);
+          riskScorer.addSharedF1s(featData);
         }
       }
-      if (riskScorer.hasSharedF1Exclusives() == false && f1OvrExLibFeatIDs.size() > 0) {
-        String results = getFeaturesForEntity(f1OvrExLibFeatIDs, entityID);
-        if (checkForSharedFeatures(results)) {
-          riskScorer.setSharedF1Exclusives(true);
-          noSharedF1s = false;
+      if (f1OvrExLibFeats.size() > 0) {
+        List<Long> ids = new ArrayList<Long>();
+        ids.addAll(f1OvrExLibFeats.keySet());
+        String results = getFeaturesForEntity(ids, entityID);
+        List<FeatData> featData = checkForSharedFeatures(results, f1OvrExLibFeats);
+        if (!featData.isEmpty()) {
+          riskScorer.addSharedExclusives(featData);
+          riskScorer.addSharedF1s(featData);
         }
       }
-      if (f1LibFeatIDs.size() > 0) {
-        String results = getFeaturesForEntity(f1LibFeatIDs, entityID);
-        if (checkForSharedFeatures(results)) {
-          noSharedF1s = false;
+      if (f1LibFeats.size() > 0) {
+        List<Long> ids = new ArrayList<Long>();
+        ids.addAll(f1LibFeats.keySet());
+        String results = getFeaturesForEntity(ids, entityID);
+        List<FeatData> featData = checkForSharedFeatures(results, f1LibFeats);
+        if (!featData.isEmpty()) {
+          riskScorer.addSharedF1s(featData);
         }
       }
-      riskScorer.setNoSharedF1(noSharedF1s);
 
       // Check if the related entities section reveals any ambiguous relationships (count as red).
       JsonArray relatedEntities = optJsonArray(rootObject, RELATED_ENTITIES_SECTION);
@@ -407,9 +413,51 @@ public class RiskScoringService implements ListenerService {
     }
   }
 
+  private List<String> getMultiValueFeatures(JsonArray fTypeValues) {
+    List<String> featList = new ArrayList<>();
+    for (int i = 0; i < fTypeValues.size(); i++) {
+      JsonObject fTypeObject = fTypeValues.getJsonObject(i);
+      String featDesc = fTypeObject.getString(FEAT_DESC_TAG);
+      featList.add(featDesc);
+    }
+    return featList;
+  }
+
+  private void collectLibFeatures(String fType, JsonArray fTypeValues, Map<Long, FeatData> libFeaturess) {
+    for (int i = 0; i < fTypeValues.size(); i++) {
+      JsonObject fTypeObject = fTypeValues.getJsonObject(i);
+      Long featID = fTypeObject.getJsonNumber(LIB_FEAT_ID_TAG).longValue();
+      if (featID != null) {
+        String featDesc = fTypeObject.getString(FEAT_DESC_TAG);
+        FeatData featData = new FeatData();
+        featData.setFeature(fType);
+        featData.setDescription(featDesc);
+        libFeaturess.put(featID, featData);
+      }
+    }
+  }
+
   private String getFeaturesForEntity(List<Long> feats, long entityID) throws ServiceExecutionException {
     try {
       return g2Service.findEntitiesByFeatureIDs(feats, entityID);
+    } catch (RuntimeException e) {
+      throw new ServiceExecutionException(e);
+    }
+  }
+
+  private List<FeatData> checkForSharedFeatures(String jsonDoc, Map<Long, FeatData> features) throws ServiceExecutionException {
+    List<FeatData> sharedFeat = new ArrayList<>();
+    try {
+      JsonReader reader = Json.createReader(new StringReader(jsonDoc));
+      JsonArray featJson = reader.readArray();
+      for (int i = 0; i < featJson.size(); i++) {
+        Long id = featJson.getJsonObject(i).getJsonNumber(LIB_FEAT_ID_TAG).longValue();
+        FeatData fd = features.get(id);
+        if (fd != null) {
+          sharedFeat.add(fd);
+        }
+      }
+      return sharedFeat;
     } catch (RuntimeException e) {
       throw new ServiceExecutionException(e);
     }

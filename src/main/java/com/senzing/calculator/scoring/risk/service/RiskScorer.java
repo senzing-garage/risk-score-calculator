@@ -1,7 +1,9 @@
 package com.senzing.calculator.scoring.risk.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -34,11 +36,11 @@ public class RiskScorer {
   // Red quality.
   private boolean ambiguous;
   private boolean mutltipleDOBs;
-  private boolean multipleExclusives;
-  private boolean sharedF1Exclusives;
+  private Map<String, List<String>> multipleExclusives;
+  private List<FeatData> sharedExclusives;
   // Green collision.
   private boolean noPossibleMatch;
-  private boolean noSharedF1;
+  private List<FeatData> sharedF1s;
   // Green quality.
   private boolean oneAndOnlyOneDOB;
   private boolean oneAndOnlyOneSSN;
@@ -77,16 +79,18 @@ public class RiskScorer {
   private static final String POSIBLE_MATCH = "Possible match exists";
   private static final String MANUAL_YELLOW = "Manually flagged yellow";
 
+  private static final int MAX_SUBSTRING_SIZE = 250;
+
   public RiskScorer() {
     ambiguous = false;
     mutltipleDOBs = false;
-    multipleExclusives = false;
-    sharedF1Exclusives = false;
+    multipleExclusives = new HashMap<>();
     noPossibleMatch = false;
-    noSharedF1 = false;
+    sharedF1s = new ArrayList<>();
     oneAndOnlyOneDOB = false;
     oneAndOnlyOneSSN = false;
     sourceIMDM = false;
+    sharedExclusives = new ArrayList<>();
   }
 
   public boolean isAmbiguous() {
@@ -105,20 +109,12 @@ public class RiskScorer {
     this.mutltipleDOBs = mutltipleDOBs;
   }
 
-  public boolean hasMultipleExclusives() {
+  public Map<String, List<String>> getMultipleExclusives() {
     return multipleExclusives;
   }
 
-  public void setMultipleExclusives(boolean multipleExclusives) {
-    this.multipleExclusives = multipleExclusives;
-  }
-
-  public boolean hasSharedF1Exclusives() {
-    return sharedF1Exclusives;
-  }
-
-  public void setSharedF1Exclusives(boolean sharedF1Exclusives) {
-    this.sharedF1Exclusives = sharedF1Exclusives;
+  public void addMultipleExclusives(String type, List<String> values) {
+    this.multipleExclusives.put(type, values);
   }
 
   public boolean hasOneAndOnlyOneDOB() {
@@ -153,16 +149,24 @@ public class RiskScorer {
     this.noPossibleMatch = noPossibleMatch;
   }
 
-  public boolean hasNoSharedF1() {
-    return noSharedF1;
+  public List<FeatData>  getSharedF1() {
+    return sharedF1s;
   }
 
-  public void setNoSharedF1(boolean noSharedF1) {
-    this.noSharedF1 = noSharedF1;
+  public void addSharedF1s(List<FeatData> sharedF1s) {
+    this.sharedF1s.addAll(sharedF1s);
   }
 
   public RiskScore getScoreOverride() {
     return scoreOverride;
+  }
+
+  public List<FeatData> getSharedExclusives() {
+    return sharedExclusives;
+  }
+
+  public void addSharedExclusives(List<FeatData> sharedExclusives) {
+    this.sharedExclusives.addAll(sharedExclusives);
   }
 
   public void setScoreOverride(String override) {
@@ -178,7 +182,7 @@ public class RiskScorer {
   }
 
   public RiskScore getDataQualityScore() {
-    boolean isRed = ambiguous || multipleExclusives || sharedF1Exclusives || mutltipleDOBs;
+    boolean isRed = ambiguous || !multipleExclusives.isEmpty() || !sharedExclusives.isEmpty() || mutltipleDOBs;
     boolean isGreen = sourceIMDM && oneAndOnlyOneDOB && oneAndOnlyOneSSN;
     
     if (isRed) {
@@ -193,7 +197,7 @@ public class RiskScorer {
   public RiskScore getCollisionScore() {
     RiskScore qualityScore = getDataQualityScore();
     boolean isRed = qualityScore == RiskScore.Red || scoreOverride == RiskScore.Red;
-    boolean isGreen = qualityScore == RiskScore.Green && (scoreOverride != RiskScore.Red && scoreOverride != RiskScore.Yellow) && noSharedF1 && noPossibleMatch;
+    boolean isGreen = qualityScore == RiskScore.Green && (scoreOverride != RiskScore.Red && scoreOverride != RiskScore.Yellow) && sharedF1s.isEmpty() && noPossibleMatch;
 
     if (isRed) {
       return RiskScore.Red;
@@ -223,11 +227,21 @@ public class RiskScorer {
       if (mutltipleDOBs) {
         qualityReasons.add(MULTIPLE_DOBS);
       }
-      if (multipleExclusives) {
-        qualityReasons.add(MULTIPLE_EXCLUSIVES);
+      if (!multipleExclusives.isEmpty()) {
+        String me = multipleExclusives.toString();
+        if (me.length() > MAX_SUBSTRING_SIZE) {
+          // limit the string size to avoid failed db insert
+          me = getShortenedFeatureMap(multipleExclusives);
+        }
+        qualityReasons.add(MULTIPLE_EXCLUSIVES + " - " + me);
       }
-      if (sharedF1Exclusives) {
-        qualityReasons.add(SHARED_EXCLUSIVES);
+      if (!sharedExclusives.isEmpty()) {
+        String se = sharedExclusives.toString();
+        if (se.length() > MAX_SUBSTRING_SIZE) {
+          // limit the string size to avoid failed db insert
+          se = getShortenedFetaDataList(sharedExclusives);
+        }
+        qualityReasons.add(SHARED_EXCLUSIVES + " - " + se);
       }
       collisionReasons.add(RED_DATA_QUALITY);
     } else if (qualityScore == RiskScore.Green) {
@@ -262,7 +276,7 @@ public class RiskScorer {
       if (noPossibleMatch) {
         collisionReasons.add(NO_POSIBLE_MATCH);
       }
-      if (noSharedF1) {
+      if (sharedF1s.isEmpty()) {
         collisionReasons.add(NO_SHARED_F1);
       }
     } else {
@@ -275,8 +289,13 @@ public class RiskScorer {
       if (!noPossibleMatch) {
         collisionReasons.add(POSIBLE_MATCH);
       }
-      if (!noSharedF1) {
-        collisionReasons.add(SHARES_F1);
+      if (!sharedF1s.isEmpty()) {
+        String sf1 = sharedF1s.toString();
+        if (sf1.length() > MAX_SUBSTRING_SIZE) {
+          // limit the string size to avoid failed db insert
+          sf1 = getShortenedFetaDataList(sharedF1s);
+        }
+        collisionReasons.add(SHARES_F1 + " - " + sf1);
       }
     }
 
@@ -287,16 +306,26 @@ public class RiskScorer {
     return rootObject.build().toString();
   }
 
-  @Override
-  public String toString() {
-    RiskScore quality = getDataQualityScore();
-    RiskScore collision = getCollisionScore();
-    return "RiskScorer [quality=" + quality + ", collision=" + collision + ", ambiguous=" + ambiguous + ", mutltipleDOBs="
-        + mutltipleDOBs + ", multipleExclusives=" + multipleExclusives + ", sharedF1Exclusives=" + sharedF1Exclusives
-        + ", scoreOverride=" + scoreOverride + ", oneAndOnlyOneDOB="
-        + oneAndOnlyOneDOB + ", oneAndOnlyOneSSN=" + oneAndOnlyOneSSN + ", sourceIMDM=" + sourceIMDM
-        + ", noPossibleMatch=" + noPossibleMatch + ", noSharedF1=" + noSharedF1 + "]";
+  private String getShortenedFeatureMap(Map<String, List<String>> featMap) {
+    Map<String, List<String>> shortened = new HashMap<>();
+    for (String key : featMap.keySet()) {
+      List<String> values = featMap.get(key);
+      if (shortened.toString().length() + key.length() + values.toString().length() > MAX_SUBSTRING_SIZE) {
+        break;
+      }
+      shortened.put(key, values);
+    }
+    return shortened.toString();
   }
 
-  
+  private String getShortenedFetaDataList(List<FeatData> featData) {
+    List<FeatData> fdList = new ArrayList<>();
+    for (FeatData fd : featData) {
+      if (fdList.toString().length() + fd.toString().length() > MAX_SUBSTRING_SIZE) {
+        break;
+      }
+      fdList.add(fd);
+    }
+    return fdList.toString();
+  }
 }
