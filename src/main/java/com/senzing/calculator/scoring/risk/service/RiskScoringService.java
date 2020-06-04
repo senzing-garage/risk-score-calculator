@@ -68,6 +68,7 @@ public class RiskScoringService implements ListenerService {
   // Features
   private static final String SSN_TAG = "SSN";
   private static final String DOB_TAG = "DOB";
+  private static final String ADDRESS_TAG = "ADDRESS";
   private static final String TRUSTED_ID_TAG = "TRUSTED_ID";
   private static final String RISK_SCORE_OVERRIDE_TAG = "RISK_SCORE_OVERRIDE";
   // Features' sub tags
@@ -211,149 +212,221 @@ public class RiskScoringService implements ListenerService {
       // For collecting up scoring info
       RiskScorer riskScorer = new RiskScorer();
 
-      // Data Quality check.
+      // Find section where the actual entity data exists.
       JsonObject resolvedEntity = optJsonObject(rootObject, RESOLVED_ENTITY_SECTION);
-      if (resolvedEntity != null) {
 
-        // Good part of the needed data is contained in the features.
-        // Check quality of SSN.
-        JsonObject features = optJsonObject(resolvedEntity, FEATURES_SECTION);
-        if (getFeatureCount(features, SSN_TAG) == 1) {
-          riskScorer.setOneAndOnlyOneSSN(true);
-        }
+      //=========================================
+      // Data quality check
+      //=========================================
 
-        // Check quality of DOB.
-        int dobCount = getFeatureCount(features, DOB_TAG);
-        if (dobCount == 1) {
-          riskScorer.setOneAndOnlyOneDOB(true);
-        } else if (dobCount > 1) {
-          riskScorer.setMutltipleDOBs(true);
-        }
+      // Good part of the needed data for data quality is contained in the features.
+      // Check quality of SSN.
+      JsonObject features = optJsonObject(resolvedEntity, FEATURES_SECTION);
+      if (getFeatureCount(features, SSN_TAG) <= 1) {
+        riskScorer.setOneOrLessSSN(true);
+      }
 
-        // Check if any exclusive types have multiple values.
-        for (String fType : f1Exclusive) {
-          JsonArray fTypeValues = optJsonArray(features, fType);
-          if (fTypeValues != null) {
-            if (fTypeValues.size() > 1) {
-              List<String> featList = getMultiValueFeatures(fTypeValues);
-              riskScorer.addMultipleExclusives(fType, featList);
-            }
-            // Collect up the feature values for later.
-            collectLibFeatures(fType, fTypeValues, f1ExLibFeats);
-          }
-        }
+      // Check quality of DOB.
+      int dobCount = getFeatureCount(features, DOB_TAG);
+      if (dobCount == 1) {
+        riskScorer.setOneAndOnlyOneDOB(true);
+      } else if (dobCount > 1) {
+        riskScorer.setMutltipleDOBs(true);
+      }
 
-        // Any feature overrides need to be checked. They can also be F1 exclusive.
-        for (Fbovr fbOvr : f1OverRideFType) {
-          JsonArray fTypeValues = optJsonArray(features, fbOvr.getFType());
-          if (fTypeValues != null && fTypeValues.size() > 1) {
-            for (int i = 0; i < fTypeValues.size(); i++) {
-              String uType = fTypeValues.getJsonObject(i).getString(UTYPE_CODE_TAG, null);
-              if (uType != null && uType.contentEquals(fbOvr.getUType())) {
-                List<String> featList = getMultiValueFeatures(fTypeValues);
-                riskScorer.addMultipleExclusives(fbOvr.getFType(), featList);
-              }
-            }
-            // Collect up the feature values for later.
-            collectLibFeatures(fbOvr.getFType(), fTypeValues, f1OvrExLibFeats);
-          }
-        }
+      // Check for quality of addresses
+      int addressCount = getFeatureCount(features, ADDRESS_TAG);
+      if (addressCount > 0) {
+        riskScorer.setOneOrMoreAddress(true);
+      }
 
-        // Collect up F1 feature values. They are used later.
-        for (String fType : f1Features) {
-          JsonArray fTypeValues = optJsonArray(features, fType);
-          if (fTypeValues != null) {
-            collectLibFeatures(fType, fTypeValues, f1LibFeats);
-          }
-        }
-        // OT-TODO: This section is under discussion and its fate will be decided later.
-        // Existence of TRUSTED_IDs indicates it could have been forced apart (forced
-        // unmerge).
-//        JSONArray trustedIDs = features.optJSONArray(TRUSTED_ID_TAG);
-//        if (trustedIDs != null) {
-//        // Non-shared trusted id means it was used to split entity apart.
-//        // OT-TODO: verify the above is really true.
-//          if (checkNotSharedFeature(trustedIDs)) {
-//            riskScorer.setForcedUnMerge(true);
-//          }
-//        }
+      // Check if any exclusive types have multiple values (counts as red if any found).
+      checkForMultipleExclusives(features, f1ExLibFeats, riskScorer);
 
-        // Handle any override of risk scores.
-        JsonArray scoreOverride = optJsonArray(features, RISK_SCORE_OVERRIDE_TAG);
-        if (scoreOverride != null) {
-          for (int i = 0; i < scoreOverride.size(); i++) {
-            String featDesc = scoreOverride.getJsonObject(i).getString(FEAT_DESC_TAG, "");
-            riskScorer.setScoreOverride(featDesc);
-          }
+      // Any feature overrides need to be checked. They can also be F1 exclusive.
+      checkFormltipleExclusivesForOverrides(features, f1OvrExLibFeats, riskScorer);
+
+      // Collect up F1 feature values. They are used later.
+      for (String fType : f1Features) {
+        JsonArray fTypeValues = optJsonArray(features, fType);
+        if (fTypeValues != null) {
+          collectLibFeatures(fType, fTypeValues, f1LibFeats);
         }
       }
 
-      // Now check if any of the F1 features are shared with other entities.
-      if (f1ExLibFeats.size() > 0) {
-        List<Long> ids = new ArrayList<Long>();
-        ids.addAll(f1ExLibFeats.keySet());
-        String results = getFeaturesForEntity(ids, entityID);
-        List<FeatData> featData = checkForSharedFeatures(results, f1ExLibFeats);
-        if (!featData.isEmpty()) {
-          riskScorer.addSharedExclusives(featData);
-          riskScorer.addSharedF1s(featData);
-        }
-      }
-      if (f1OvrExLibFeats.size() > 0) {
-        List<Long> ids = new ArrayList<Long>();
-        ids.addAll(f1OvrExLibFeats.keySet());
-        String results = getFeaturesForEntity(ids, entityID);
-        List<FeatData> featData = checkForSharedFeatures(results, f1OvrExLibFeats);
-        if (!featData.isEmpty()) {
-          riskScorer.addSharedExclusives(featData);
-          riskScorer.addSharedF1s(featData);
-        }
-      }
-      if (f1LibFeats.size() > 0) {
-        List<Long> ids = new ArrayList<Long>();
-        ids.addAll(f1LibFeats.keySet());
-        String results = getFeaturesForEntity(ids, entityID);
-        List<FeatData> featData = checkForSharedFeatures(results, f1LibFeats);
-        if (!featData.isEmpty()) {
-          riskScorer.addSharedF1s(featData);
+      // OT-TODO: This section is under discussion and its fate will be decided later.
+      // Existence of TRUSTED_IDs indicates it could have been forced apart (forced
+      // unmerge).
+      //checkForUnmerge(features, riskScorer);
+
+      //=========================================
+      // Collision quality check
+      //=========================================
+
+      // Handle any override of risk scores.
+      JsonArray scoreOverride = optJsonArray(features, RISK_SCORE_OVERRIDE_TAG);
+      if (scoreOverride != null) {
+        for (int i = 0; i < scoreOverride.size(); i++) {
+          String featDesc = scoreOverride.getJsonObject(i).getString(FEAT_DESC_TAG, "");
+          riskScorer.setScoreOverride(featDesc);
         }
       }
 
-      // Check if the related entities section reveals any ambiguous relationships (count as red).
-      JsonArray relatedEntities = optJsonArray(rootObject, RELATED_ENTITIES_SECTION);
-      if (relatedEntities != null) {
-        boolean noPossibleMatch = true;
-        for (int i = 0; i < relatedEntities.size(); i++) {
-          JsonObject entity = relatedEntities.getJsonObject(i);
+      // Check if any of the F1 exclusive features are shared with other entities (count as red if any found).
+      checkF1ExcusivesShared(f1ExLibFeats, entityID, riskScorer);
 
-          if (entity.getInt(IS_AMBIGUOUS_TAG) > 0) {
-            riskScorer.setAmbiguous(true);
-          }
-          String matchLevelCode = entity.getString(MATCH_LEVEL_CODE_TAG, null);
-          if (matchLevelCode != null && matchLevelCode.equals(POSSIBLY_SAME_VALUE)) {
-            noPossibleMatch = false;
-          }
-        }
-        riskScorer.setNoPossibleMatch(noPossibleMatch);
-      }
+      // Check if any of the override F1 exclusive features are shared with other entities (count as red if any found).
+      checkF1ExcusivesShared(f1OvrExLibFeats, entityID, riskScorer);
 
-      // Do we have iMDM data source in this entity (counts as green).
-      JsonArray records = optJsonArray(resolvedEntity, RECORDS_SECTION);
-      if (records != null) {
-        for (int i = 0; i < records.size(); i++) {
-          JsonObject record = records.getJsonObject(i);
-          String dataSource = record.getString(DATA_SOURCE_TAG, null);
-          if (dataSource != null && dataSource.toUpperCase().equals(IMDM_VALUE)) {
-            riskScorer.setSourceIMDM(true);
-            break;
-          }
-        }
-      }
+      // Check if any of the F1 exclusive features are shared with other entities (count as green if none found).
+      checkF1Shared(f1LibFeats, entityID, riskScorer);
+
+      // Check if the related entities section reveals any ambiguous relationships or possible matches (count as red if found).
+      checkRelationships(rootObject, riskScorer);
+
+      // Do we have iMDM data source in this entity (counts as green if found).
+      checkIMDMDatasource(resolvedEntity, riskScorer);
+
+      //=========================================
+      // Reporting
+      //=========================================
 
       // Data collection is done. Lets report the findings.
       reportScoring(entityID, defaultLensID, riskScorer);
+
+      // Manage record count and report on records processed.
+      reportProgress();
     } catch (RuntimeException e) {
       throw new ServiceExecutionException(e);
+    }
+  }
+
+
+  /*
+   * Checks if any of the F1 exclusives (F1E and f1ES) have multiple values and adds the finding to the risk scorer.
+   * It also collects all F1 exclusives it finds to "exclusiveFeats" which can be used for other processing later.
+   */
+  private void checkForMultipleExclusives(JsonObject features, Map<Long, FeatData> exclusiveFeats, RiskScorer riskScorer) {
+    for (String fType : f1Exclusive) {
+      JsonArray fTypeValues = optJsonArray(features, fType);
+      if (fTypeValues != null) {
+        if (fTypeValues.size() > 1) {
+          List<String> featList = getMultiValueFeatures(fTypeValues);
+          riskScorer.addMultipleExclusives(fType, featList);
+        }
+        // Collect up the feature values for later.
+        collectLibFeatures(fType, fTypeValues, exclusiveFeats);
+      }
+    }
+  }
+
+  /*
+   * Checks if any of the F1 exclusive overrides have multiple values and adds the finding to the risk scorer.
+   * It also collects all found to "exclusiveFeats" which can be used for other processing later.
+   */
+  private void checkFormltipleExclusivesForOverrides(JsonObject features, Map<Long, FeatData> exclusiveFeats, RiskScorer riskScorer) {
+    for (Fbovr fbOvr : f1OverRideFType) {
+      JsonArray fTypeValues = optJsonArray(features, fbOvr.getFType());
+      if (fTypeValues != null && fTypeValues.size() > 1) {
+        for (int i = 0; i < fTypeValues.size(); i++) {
+          String uType = fTypeValues.getJsonObject(i).getString(UTYPE_CODE_TAG, null);
+          if (uType != null && uType.contentEquals(fbOvr.getUType())) {
+            List<String> featList = getMultiValueFeatures(fTypeValues);
+            riskScorer.addMultipleExclusives(fbOvr.getFType(), featList);
+          }
+        }
+        // Collect up the feature values for later.
+        collectLibFeatures(fbOvr.getFType(), fTypeValues, exclusiveFeats);
+      }
+    }
+  }
+
+  /*
+   * Checks with G2 if any of the F1 exclusive features are shared with other entities.
+   * If any are found, they are added to the risk scorer for evaluation.
+   */
+  private void checkF1ExcusivesShared(Map<Long, FeatData> f1Exclusives, long entityID, RiskScorer riskScorer) throws ServiceExecutionException {
+    if (f1Exclusives.size() > 0) {
+      List<Long> ids = new ArrayList<Long>();
+      ids.addAll(f1Exclusives.keySet());
+      // Query G2. When checking, the entityID is excluded so returned values all belong to other entities.
+      String results = getFeaturesForEntity(ids, entityID);
+      List<FeatData> featData = checkForSharedFeatures(results, f1Exclusives);
+      if (!featData.isEmpty()) {
+        riskScorer.addSharedExclusives(featData);
+        riskScorer.addSharedF1s(featData);
+      }
+    }
+  }
+
+  // OT-TODO: Not settled how unmerge will be handled.
+  private void checkForUnmerge(JsonObject features, RiskScorer riskScorer) {
+    JsonArray trustedIDs = optJsonArray(features, TRUSTED_ID_TAG);
+    if (trustedIDs != null) {
+    // Non-shared trusted id means it was used to split entity apart.
+    // OT-TODO: verify the above is really true.
+//      if (checkNotSharedFeature(trustedIDs)) {
+//        riskScorer.setForcedUnMerge(true);
+//      }
+    }
+  }
+
+  /*
+   * Checks with G2 if any of the F1 features are shared with other entities.
+   * If any are found, they are added to the risk scorer for evaluation.
+   */
+  private void checkF1Shared(Map<Long, FeatData> f1LibFeats, long entityID, RiskScorer riskScorer) throws ServiceExecutionException {
+    if (f1LibFeats.size() > 0) {
+      List<Long> ids = new ArrayList<Long>();
+      ids.addAll(f1LibFeats.keySet());
+      String results = getFeaturesForEntity(ids, entityID);
+      List<FeatData> featData = checkForSharedFeatures(results, f1LibFeats);
+      if (!featData.isEmpty()) {
+        riskScorer.addSharedF1s(featData);
+      }
+    }
+  }
+
+  /*
+   * Scans the entity for any ambiguous relationships and any possible matches.
+   * The risk scorer is updated with the results found.
+   */
+  private void checkRelationships(JsonObject entityRoot, RiskScorer riskScorer) {
+    JsonArray relatedEntities = optJsonArray(entityRoot, RELATED_ENTITIES_SECTION);
+    if (relatedEntities != null) {
+      boolean noPossibleMatch = true;
+      for (int i = 0; i < relatedEntities.size(); i++) {
+        JsonObject entity = relatedEntities.getJsonObject(i);
+
+        // Check ambiguous
+        if (entity.getInt(IS_AMBIGUOUS_TAG) > 0) {
+          riskScorer.setAmbiguous(true);
+        }
+        // Check possible match.
+        String matchLevelCode = entity.getString(MATCH_LEVEL_CODE_TAG, null);
+        if (matchLevelCode != null && matchLevelCode.equals(POSSIBLY_SAME_VALUE)) {
+          noPossibleMatch = false;
+        }
+      }
+      riskScorer.setNoPossibleMatch(noPossibleMatch);
+    }
+  }
+
+  /*
+   * Checks if any of the data sources are iMDM.
+   * The risk scorer is updated with the results found.
+   */
+  private void checkIMDMDatasource(JsonObject resolvedEntity, RiskScorer riskScorer) {
+    JsonArray records = optJsonArray(resolvedEntity, RECORDS_SECTION);
+    if (records != null) {
+      for (int i = 0; i < records.size(); i++) {
+        JsonObject record = records.getJsonObject(i);
+        String dataSource = record.getString(DATA_SOURCE_TAG, null);
+        if (dataSource != null && dataSource.toUpperCase().equals(IMDM_VALUE)) {
+          riskScorer.setSourceIMDM(true);
+          break;
+        }
+      }
     }
   }
 
@@ -473,12 +546,15 @@ public class RiskScoringService implements ListenerService {
     }
   }
 
-  public void reportScoring(long entityID, int lensID, RiskScorer riskScorer) throws ServiceExecutionException {
+  private void reportScoring(long entityID, int lensID, RiskScorer riskScorer) throws ServiceExecutionException {
     try {
       dbService.postRiskScore(entityID, lensID, riskScorer.getDataQualityScore().toString(), riskScorer.getCollisionScore().toString(), riskScorer.getReason());
     } catch (RuntimeException e) {
       throw new ServiceExecutionException(e);
     }
+  }
+
+  private void reportProgress() {
     processCount++;
     if (processCount % 1000 == 0) {
       Date current = new Date();

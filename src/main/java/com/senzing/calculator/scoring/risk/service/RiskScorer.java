@@ -43,8 +43,9 @@ public class RiskScorer {
   private List<FeatData> sharedF1s;
   // Green quality.
   private boolean oneAndOnlyOneDOB;
-  private boolean oneAndOnlyOneSSN;
+  private boolean oneOrLessSSN;
   private boolean sourceIMDM;
+  private boolean oneOrMoreAddress;
 
   private RiskScore scoreOverride;
 
@@ -60,8 +61,9 @@ public class RiskScorer {
 
   // Green quality reasons.
   private static final String IMDM_EXISTS = "At least 1 iMDM record";
-  private static final String ONE_SSN = "One and only one SSN";
+  private static final String ONE_SSN = "One or less SSN";
   private static final String ONE_DOB = "One and only one DOB";
+  private static final String ONE_OR_MORE_ADDRESS = "One or more addresses";
 
   // Green collision reasons.
   private static final String GREEN_DATA_QUALITY = "Green data quality";
@@ -70,8 +72,9 @@ public class RiskScorer {
 
   // Yellow quality reasons.
   private static final String NO_IMDM = "No iMDM record";
-  private static final String NOT_ONE_SSN = "Not one and only one SSN";
+  private static final String NOT_ONE_SSN = "More than one SSN";
   private static final String NOT_ONE_DOB = "Not one and only one DOB";
+  private static final String NO_ADDRESS = "No address";
   
   // Yellow collision reasons.
   private static final String NOT_GREEN_DATA_QUALITY = "Data quality not green";
@@ -88,8 +91,9 @@ public class RiskScorer {
     noPossibleMatch = false;
     sharedF1s = new ArrayList<>();
     oneAndOnlyOneDOB = false;
-    oneAndOnlyOneSSN = false;
+    oneOrLessSSN = false;
     sourceIMDM = false;
+    oneOrMoreAddress = false;
     sharedExclusives = new ArrayList<>();
   }
 
@@ -125,12 +129,12 @@ public class RiskScorer {
     this.oneAndOnlyOneDOB = oneAndOnlyOneDOB;
   }
 
-  public boolean hasOneAndOnlyOneSSN() {
-    return oneAndOnlyOneSSN;
+  public boolean hasOneOrLesseSSN() {
+    return oneOrLessSSN;
   }
 
-  public void setOneAndOnlyOneSSN(boolean oneAndOnlyOneSSN) {
-    this.oneAndOnlyOneSSN = oneAndOnlyOneSSN;
+  public void setOneOrLessSSN(boolean oneOrLessSSN) {
+    this.oneOrLessSSN = oneOrLessSSN;
   }
 
   public boolean hasSourceIMDM() {
@@ -147,6 +151,14 @@ public class RiskScorer {
 
   public void setNoPossibleMatch(boolean noPossibleMatch) {
     this.noPossibleMatch = noPossibleMatch;
+  }
+
+  public boolean hasOneOrMoreAddress() {
+    return oneOrMoreAddress;
+  }
+
+  public void setOneOrMoreAddress(boolean oneOrMoreAddress) {
+    this.oneOrMoreAddress = oneOrMoreAddress;
   }
 
   public List<FeatData>  getSharedF1() {
@@ -183,7 +195,7 @@ public class RiskScorer {
 
   public RiskScore getDataQualityScore() {
     boolean isRed = ambiguous || !multipleExclusives.isEmpty() || !sharedExclusives.isEmpty() || mutltipleDOBs;
-    boolean isGreen = sourceIMDM && oneAndOnlyOneDOB && oneAndOnlyOneSSN;
+    boolean isGreen = sourceIMDM && oneAndOnlyOneDOB && oneOrLessSSN && oneOrMoreAddress;
     
     if (isRed) {
       return RiskScore.Red;
@@ -249,10 +261,13 @@ public class RiskScorer {
         qualityReasons.add(IMDM_EXISTS);
       }
       if (oneAndOnlyOneDOB) {
+        qualityReasons.add(ONE_DOB);
+      }
+      if (oneOrLessSSN) {
         qualityReasons.add(ONE_SSN);
       }
-      if (oneAndOnlyOneSSN) {
-        qualityReasons.add(ONE_DOB);
+      if (oneOrMoreAddress) {
+        qualityReasons.add(ONE_OR_MORE_ADDRESS);
       }
     } else {
       if (!sourceIMDM) {
@@ -261,8 +276,11 @@ public class RiskScorer {
       if (!oneAndOnlyOneDOB) {
         qualityReasons.add(NOT_ONE_DOB);
       }
-      if (!oneAndOnlyOneSSN) {
+      if (!oneOrLessSSN) {
         qualityReasons.add(NOT_ONE_SSN);
+      }
+      if (!oneOrMoreAddress) {
+        qualityReasons.add(NO_ADDRESS);
       }
     }
 
