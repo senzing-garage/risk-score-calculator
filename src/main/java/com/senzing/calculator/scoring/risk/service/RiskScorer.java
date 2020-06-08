@@ -137,7 +137,7 @@ public class RiskScorer {
     this.oneAndOnlyOneDOB = oneAndOnlyOneDOB;
   }
 
-  public boolean hasOneOrLesseSSN() {
+  public boolean hasOneOrLessSSN() {
     return oneOrLessSSN;
   }
 
