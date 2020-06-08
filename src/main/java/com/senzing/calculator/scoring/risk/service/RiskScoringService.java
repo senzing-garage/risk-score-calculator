@@ -74,15 +74,19 @@ public class RiskScoringService implements ListenerService {
   // Features' sub tags
   private static final String UTYPE_CODE_TAG = "UTYPE_CODE";
   private static final String FEAT_DESC_TAG = "FEAT_DESC";
+  private static final String FEAT_DESC_VALUES_TAG = "FEAT_DESC_VALUES";
   // Miscellaneous tags
   private static final String IS_AMBIGUOUS_TAG = "IS_AMBIGUOUS";
   private static final String MATCH_LEVEL_CODE_TAG = "MATCH_LEVEL_CODE";
   private static final String DATA_SOURCE_TAG = "DATA_SOURCE";
   private static final String LIB_FEAT_ID_TAG = "LIB_FEAT_ID";
+  private static final String CANDIDATE_CAP_REACHED_TAG = "CANDIDATE_CAP_REACHED";
+  private static final String SCORING_CAP_REACHED_TAG = "SCORING_CAP_REACHED";
   // Values.
   private static final String POSSIBLY_SAME_VALUE = "POSSIBLY_SAME";
   private static final String IMDM_VALUE = "IMDM";
   private static final String YES_VALUE = "YES";
+  private static final String Y_VALUE = "Y";
 
   private static final int defaultLensID = 1;
 
@@ -190,7 +194,7 @@ public class RiskScoringService implements ListenerService {
     // Get the information about the entity from G2.
     String entityData = null;
     try {
-      entityData = g2Service.getEntity(entityID, false, false);
+      entityData = g2Service.getEntity(entityID, false, true);
     } catch (ServiceExecutionException e) {
       if (e.getMessage().contains("Unknown resolved entity value")) {
         System.err.println(e.getMessage());
@@ -256,7 +260,7 @@ public class RiskScoringService implements ListenerService {
       for (String fType : f1Features) {
         JsonArray fTypeValues = optJsonArray(features, fType);
         if (fTypeValues != null) {
-          collectLibFeatures(fType, fTypeValues, f1LibFeats);
+          collectLibFeatures(fType, fTypeValues, f1LibFeats, false);
         }
       }
 
@@ -325,7 +329,7 @@ public class RiskScoringService implements ListenerService {
           riskScorer.addMultipleExclusives(fType, featList);
         }
         // Collect up the feature values for later.
-        collectLibFeatures(fType, fTypeValues, exclusiveFeats);
+        collectLibFeatures(fType, fTypeValues, exclusiveFeats, true);
       }
     }
   }
@@ -346,7 +350,7 @@ public class RiskScoringService implements ListenerService {
           }
         }
         // Collect up the feature values for later.
-        collectLibFeatures(fbOvr.getFType(), fTypeValues, exclusiveFeats);
+        collectLibFeatures(fbOvr.getFType(), fTypeValues, exclusiveFeats, true);
       }
     }
   }
@@ -515,18 +519,33 @@ public class RiskScoringService implements ListenerService {
     return featList;
   }
 
-  private void collectLibFeatures(String fType, JsonArray fTypeValues, Map<Long, FeatData> libFeaturess) {
+  private void collectLibFeatures(String fType, JsonArray fTypeValues, Map<Long, FeatData> libFeaturess, boolean includeGeneric) {
     for (int i = 0; i < fTypeValues.size(); i++) {
       JsonObject fTypeObject = fTypeValues.getJsonObject(i);
       Long featID = fTypeObject.getJsonNumber(LIB_FEAT_ID_TAG).longValue();
       if (featID != null) {
-        String featDesc = fTypeObject.getString(FEAT_DESC_TAG);
-        FeatData featData = new FeatData();
-        featData.setFeature(fType);
-        featData.setDescription(featDesc);
-        libFeaturess.put(featID, featData);
+        if (includeGeneric || !isGeneric(fTypeObject))
+        {
+          String featDesc = fTypeObject.getString(FEAT_DESC_TAG);
+          FeatData featData = new FeatData();
+          featData.setFeature(fType);
+          featData.setDescription(featDesc);
+          libFeaturess.put(featID, featData);
+        }
       }
     }
+  }
+
+  private boolean isGeneric(JsonObject featureObject) {
+    JsonArray featDescs = featureObject.getJsonArray(FEAT_DESC_VALUES_TAG);
+    for (int i = 0; i < featDescs.size(); i++) {
+      JsonObject descriptionObject = featDescs.getJsonObject(i);
+      if (descriptionObject.getString(CANDIDATE_CAP_REACHED_TAG).equals(Y_VALUE) || 
+          descriptionObject.getString(SCORING_CAP_REACHED_TAG).equals(Y_VALUE)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private String getFeaturesForEntity(List<Long> feats, long entityID) throws ServiceExecutionException {
