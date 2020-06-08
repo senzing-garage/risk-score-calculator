@@ -31,6 +31,13 @@ import javax.json.JsonObjectBuilder;
  *                Entity has at least 1 IMDM records
  *                Entity has one and only one SSN
  *                Entity has one and only one DOB
+ * 
+ * Modification 06/03/2020
+ * Green Data Quality (entity has all of the following):
+ *                Entity has at least 1 IMDM records
+ *                Entity has none or one SSN
+ *                Entity has one and only one DOB
+ *                Entity has address
  */
 public class RiskScorer {
   // Red quality.
@@ -47,6 +54,7 @@ public class RiskScorer {
   private boolean sourceIMDM;
   private boolean oneOrMoreAddress;
 
+  // Override for data quality scores
   private RiskScore scoreOverride;
 
   // Red quality reasons.
@@ -181,6 +189,13 @@ public class RiskScorer {
     this.sharedExclusives.addAll(sharedExclusives);
   }
 
+  /**
+   * This method can override the data quality score.  It only deteriorates the score; Green can be changed to
+   * Yellow or Red and Yellow can be changed to red.  If value of Green is passed in with the data quality score
+   * of Red or Yellow, the value is ignored and score left unchanged.
+   * 
+   * @param override
+   */
   public void setScoreOverride(String override) {
     // The precedence of overrides is: Red > Yellow > Green.
     String overrideUpper = override.toUpperCase();
@@ -193,6 +208,11 @@ public class RiskScorer {
     }
   }
 
+  /**
+   * Returns what the data quality score is (Red, Yellow or Green)
+   * 
+   * @return Score (Red, Yellow or Green)
+   */
   public RiskScore getDataQualityScore() {
     boolean isRed = ambiguous || !multipleExclusives.isEmpty() || !sharedExclusives.isEmpty() || mutltipleDOBs;
     boolean isGreen = sourceIMDM && oneAndOnlyOneDOB && oneOrLessSSN && oneOrMoreAddress;
@@ -206,6 +226,11 @@ public class RiskScorer {
     }
   }
 
+  /**
+   * Returns what the collision score is (Red, Yellow or Green)
+   * 
+   * @return Score (Red, Yellow or Green)
+   */
   public RiskScore getCollisionScore() {
     RiskScore qualityScore = getDataQualityScore();
     boolean isRed = qualityScore == RiskScore.Red || scoreOverride == RiskScore.Red;

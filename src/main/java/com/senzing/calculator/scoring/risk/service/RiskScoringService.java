@@ -180,6 +180,12 @@ public class RiskScoringService implements ListenerService {
     }
   }
 
+  /**
+   * Calculates risk scores (data quality and collision scores) for entity of ID entityID
+   * 
+   * @param entityID ID for the entity being scored
+   * @throws ServiceExecutionException
+   */
   private void processEntity(long entityID) throws ServiceExecutionException {
     // Get the information about the entity from G2.
     String entityData = null;
@@ -302,9 +308,13 @@ public class RiskScoringService implements ListenerService {
   }
 
 
-  /*
-   * Checks if any of the F1 exclusives (F1E and f1ES) have multiple values and adds the finding to the risk scorer.
-   * It also collects all F1 exclusives it finds to "exclusiveFeats" which can be used for other processing later.
+
+  //===================================================================
+  /* Methods for data quality rules
+  //===================================================================
+
+   * Checks if any of the F1 exclusive (F1E and f1ES) have multiple values and adds the finding to the risk scorer.
+   * It also collects all F1 exclusive it finds to "exclusiveFeats" which can be used for other processing later.
    */
   private void checkForMultipleExclusives(JsonObject features, Map<Long, FeatData> exclusiveFeats, RiskScorer riskScorer) {
     for (String fType : f1Exclusive) {
@@ -371,6 +381,11 @@ public class RiskScoringService implements ListenerService {
     }
   }
 
+
+  //===================================================================
+  /* Methods for collision rules
+  //===================================================================
+
   /*
    * Checks with G2 if any of the F1 features are shared with other entities.
    * If any are found, they are added to the risk scorer for evaluation.
@@ -430,6 +445,14 @@ public class RiskScoringService implements ListenerService {
     }
   }
 
+
+  //===================================================================
+  /* Other assisting methods
+  //===================================================================
+
+  /*
+   * Collects a list of features from g2config JSON document, with frequency (F1, FM etc.) in fqs.
+   */
   private List<String> extractFeatureTypesBasedOnFrequency(JsonObject configRoot, List<String> fqs) {
     List<String> features = new ArrayList<>();
     JsonArray fTypes = configRoot.getJsonArray(CFG_FTYPE_SECTION);
@@ -443,6 +466,9 @@ public class RiskScoringService implements ListenerService {
     return features;
   }
 
+  /*
+   * Collects information about F1 exclusive features from g2config JSON document.
+   */
   private List<String> extractF1ExclusiveFeatures(JsonObject configRoot) {
     List<String> features = new ArrayList<>();
     List<String> fqs = Arrays.asList(F1_TAG, F1E_TAG, F1ES_TAG);
@@ -458,6 +484,9 @@ public class RiskScoringService implements ListenerService {
     return features;
   }
 
+  /*
+   * Collects information about F1 exclusive features override from g2config JSON document.
+   */
   private List<Fbovr> extractF1FeatureTypeOverride(JsonObject configRoot) {
     List<Fbovr> overRideFeats = new ArrayList<>();
     List<String> fqs = Arrays.asList(F1_TAG, F1E_TAG, F1ES_TAG);
@@ -474,16 +503,6 @@ public class RiskScoringService implements ListenerService {
       }
     }
     return overRideFeats;
-  }
-
-  private void collectLibFeatureIDs(JsonArray fTypeValues, List<Long> libFeatIDs) {
-    for (int i = 0; i < fTypeValues.size(); i++) {
-      JsonObject fTypeObject = fTypeValues.getJsonObject(i);
-      Long featID = fTypeObject.getJsonNumber(LIB_FEAT_ID_TAG).longValue();
-      if (featID != null) {
-        libFeatIDs.add(featID);
-      }
-    }
   }
 
   private List<String> getMultiValueFeatures(JsonArray fTypeValues) {
@@ -531,16 +550,6 @@ public class RiskScoringService implements ListenerService {
         }
       }
       return sharedFeat;
-    } catch (RuntimeException e) {
-      throw new ServiceExecutionException(e);
-    }
-  }
-
-  private boolean checkForSharedFeatures(String jsonDoc) throws ServiceExecutionException {
-    try {
-      JsonReader reader = Json.createReader(new StringReader(jsonDoc));
-      JsonArray featJson = reader.readArray();
-      return featJson.size() > 0;
     } catch (RuntimeException e) {
       throw new ServiceExecutionException(e);
     }
