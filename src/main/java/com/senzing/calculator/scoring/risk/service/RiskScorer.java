@@ -276,7 +276,7 @@ public class RiskScorer {
         String se = sharedExclusives.toString();
         if (se.length() > MAX_SUBSTRING_SIZE) {
           // limit the string size to avoid failed db insert
-          se = getShortenedFetaDataList(sharedExclusives);
+          se = getShortenedFeatDataList(sharedExclusives);
         }
         qualityReasons.add(SHARED_EXCLUSIVES + " - " + se);
       }
@@ -336,7 +336,7 @@ public class RiskScorer {
         String sf1 = sharedF1s.toString();
         if (sf1.length() > MAX_SUBSTRING_SIZE) {
           // limit the string size to avoid failed db insert
-          sf1 = getShortenedFetaDataList(sharedF1s);
+          sf1 = getShortenedFeatDataList(sharedF1s);
         }
         collisionReasons.add(SHARES_F1 + " - " + sf1);
       }
@@ -361,7 +361,7 @@ public class RiskScorer {
     return shortened.toString();
   }
 
-  private String getShortenedFetaDataList(List<FeatData> featData) {
+  private String getShortenedFeatDataList(List<FeatData> featData) {
     List<FeatData> fdList = new ArrayList<>();
     for (FeatData fd : featData) {
       if (fdList.toString().length() + fd.toString().length() > MAX_SUBSTRING_SIZE) {

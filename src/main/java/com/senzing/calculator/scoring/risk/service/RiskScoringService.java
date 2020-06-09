@@ -25,7 +25,7 @@ import com.senzing.calculator.scoring.risk.service.g2.G2ServiceExt;
 public class RiskScoringService implements ListenerService {
 
   // Class for storing ftype overrides.
-  private class Fbovr {
+  private class FeatureTypeOverride {
     private String fType;
     private String uType;
 
@@ -93,7 +93,7 @@ public class RiskScoringService implements ListenerService {
   G2ServiceExt g2Service;
   List<String> f1Exclusive;
   List<String> f1Features;
-  List<Fbovr> f1OverRideFType;
+  List<FeatureTypeOverride> f1OverRideFType;
   DatabaseService dbService;
 
   boolean serviceUp;
@@ -254,7 +254,7 @@ public class RiskScoringService implements ListenerService {
       checkForMultipleExclusives(features, f1ExLibFeats, riskScorer);
 
       // Any feature overrides need to be checked. They can also be F1 exclusive.
-      checkFormltipleExclusivesForOverrides(features, f1OvrExLibFeats, riskScorer);
+      checkForMultipleExclusivesForOverrides(features, f1OvrExLibFeats, riskScorer);
 
       // Collect up F1 feature values. They are used later.
       for (String fType : f1Features) {
@@ -338,19 +338,19 @@ public class RiskScoringService implements ListenerService {
    * Checks if any of the F1 exclusive overrides have multiple values and adds the finding to the risk scorer.
    * It also collects all found to "exclusiveFeats" which can be used for other processing later.
    */
-  private void checkFormltipleExclusivesForOverrides(JsonObject features, Map<Long, FeatData> exclusiveFeats, RiskScorer riskScorer) {
-    for (Fbovr fbOvr : f1OverRideFType) {
-      JsonArray fTypeValues = optJsonArray(features, fbOvr.getFType());
+  private void checkForMultipleExclusivesForOverrides(JsonObject features, Map<Long, FeatData> exclusiveFeats, RiskScorer riskScorer) {
+    for (FeatureTypeOverride fTypeOverride : f1OverRideFType) {
+      JsonArray fTypeValues = optJsonArray(features, fTypeOverride.getFType());
       if (fTypeValues != null && fTypeValues.size() > 1) {
         for (int i = 0; i < fTypeValues.size(); i++) {
           String uType = fTypeValues.getJsonObject(i).getString(UTYPE_CODE_TAG, null);
-          if (uType != null && uType.contentEquals(fbOvr.getUType())) {
+          if (uType != null && uType.contentEquals(fTypeOverride.getUType())) {
             List<String> featList = getMultiValueFeatures(fTypeValues);
-            riskScorer.addMultipleExclusives(fbOvr.getFType(), featList);
+            riskScorer.addMultipleExclusives(fTypeOverride.getFType(), featList);
           }
         }
         // Collect up the feature values for later.
-        collectLibFeatures(fbOvr.getFType(), fTypeValues, exclusiveFeats, true);
+        collectLibFeatures(fTypeOverride.getFType(), fTypeValues, exclusiveFeats, true);
       }
     }
   }
@@ -361,7 +361,7 @@ public class RiskScoringService implements ListenerService {
    */
   private void checkF1ExcusivesShared(Map<Long, FeatData> f1Exclusives, long entityID, RiskScorer riskScorer) throws ServiceExecutionException {
     if (f1Exclusives.size() > 0) {
-      List<Long> ids = new ArrayList<Long>();
+      List<Long> ids = new ArrayList<>();
       ids.addAll(f1Exclusives.keySet());
       // Query G2. When checking, the entityID is excluded so returned values all belong to other entities.
       String results = getFeaturesForEntity(ids, entityID);
@@ -396,7 +396,7 @@ public class RiskScoringService implements ListenerService {
    */
   private void checkF1Shared(Map<Long, FeatData> f1LibFeats, long entityID, RiskScorer riskScorer) throws ServiceExecutionException {
     if (f1LibFeats.size() > 0) {
-      List<Long> ids = new ArrayList<Long>();
+      List<Long> ids = new ArrayList<>();
       ids.addAll(f1LibFeats.keySet());
       String results = getFeaturesForEntity(ids, entityID);
       List<FeatData> featData = checkForSharedFeatures(results, f1LibFeats);
@@ -423,7 +423,7 @@ public class RiskScoringService implements ListenerService {
         }
         // Check possible match.
         String matchLevelCode = entity.getString(MATCH_LEVEL_CODE_TAG, null);
-        if (matchLevelCode != null && matchLevelCode.equals(POSSIBLY_SAME_VALUE)) {
+        if (POSSIBLY_SAME_VALUE.equals(matchLevelCode) ) {
           noPossibleMatch = false;
         }
       }
@@ -441,7 +441,7 @@ public class RiskScoringService implements ListenerService {
       for (int i = 0; i < records.size(); i++) {
         JsonObject record = records.getJsonObject(i);
         String dataSource = record.getString(DATA_SOURCE_TAG, null);
-        if (dataSource != null && dataSource.toUpperCase().equals(IMDM_VALUE)) {
+        if (IMDM_VALUE.equalsIgnoreCase(dataSource)) {
           riskScorer.setSourceIMDM(true);
           break;
         }
@@ -480,8 +480,8 @@ public class RiskScoringService implements ListenerService {
     for (int i = 0; i < fTypes.size(); i++) {
       JsonObject fType = fTypes.getJsonObject(i);
       String frequency = fType.getString(FTYPE_FREQ_TAG, "");
-      String Exclusive = fType.getString(FTYPE_EXCL_TAG, "");
-      if (fqs.contains(frequency) && Exclusive.toUpperCase().equals(YES_VALUE)) {
+      String exclusive = fType.getString(FTYPE_EXCL_TAG, "");
+      if (fqs.contains(frequency) && exclusive.equalsIgnoreCase(YES_VALUE)) {
         features.add(fType.getString(FTYPE_CODE_TAG));
       }
     }
@@ -491,8 +491,8 @@ public class RiskScoringService implements ListenerService {
   /*
    * Collects information about F1 exclusive features override from g2config JSON document.
    */
-  private List<Fbovr> extractF1FeatureTypeOverride(JsonObject configRoot) {
-    List<Fbovr> overRideFeats = new ArrayList<>();
+  private List<FeatureTypeOverride> extractF1FeatureTypeOverride(JsonObject configRoot) {
+    List<FeatureTypeOverride> overRideFeats = new ArrayList<>();
     List<String> fqs = Arrays.asList(F1_TAG, F1E_TAG, F1ES_TAG);
     JsonArray fTypes = configRoot.getJsonArray(CFG_FBOVR_SECTION);
     for (int i = 0; i < fTypes.size(); i++) {
@@ -500,10 +500,10 @@ public class RiskScoringService implements ListenerService {
       String frequency = fType.getString(FTYPE_FREQ_TAG, "");
       String Exclusive = fType.getString(FTYPE_EXCL_TAG, "");
       if (fqs.contains(frequency) && Exclusive.toUpperCase().equals(YES_VALUE)) {
-        Fbovr fbovr = new Fbovr();
-        fbovr.setFType(fType.getString(FTYPE_CODE_TAG));
-        fbovr.setUType(fType.getString(UTYPE_CODE_TAG));
-        overRideFeats.add(fbovr);
+        FeatureTypeOverride fTypeOverride = new FeatureTypeOverride();
+        fTypeOverride.setFType(fType.getString(FTYPE_CODE_TAG));
+        fTypeOverride.setUType(fType.getString(UTYPE_CODE_TAG));
+        overRideFeats.add(fTypeOverride);
       }
     }
     return overRideFeats;
