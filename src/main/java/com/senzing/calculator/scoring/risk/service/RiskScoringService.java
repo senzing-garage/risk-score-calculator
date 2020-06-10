@@ -314,9 +314,10 @@ public class RiskScoringService implements ListenerService {
 
 
   //===================================================================
-  /* Methods for data quality rules
+  // Methods for data quality rules
   //===================================================================
 
+  /*
    * Checks if any of the F1 exclusive (F1E and f1ES) have multiple values and adds the finding to the risk scorer.
    * It also collects all F1 exclusive it finds to "exclusiveFeats" which can be used for other processing later.
    */
@@ -387,7 +388,7 @@ public class RiskScoringService implements ListenerService {
 
 
   //===================================================================
-  /* Methods for collision rules
+  // Methods for collision rules
   //===================================================================
 
   /*
@@ -451,7 +452,7 @@ public class RiskScoringService implements ListenerService {
 
 
   //===================================================================
-  /* Other assisting methods
+  // Other assisting methods
   //===================================================================
 
   /*
