@@ -551,7 +551,7 @@ public class RiskScoringService implements ListenerService {
 
   private String getFeaturesForEntity(List<Long> feats, long entityID) throws ServiceExecutionException {
     try {
-      return g2Service.findEntitiesByFeatureIDs(feats, entityID);
+      return dbService.findEntitiesByFeatureIDs(feats, entityID, defaultLensID);
     } catch (RuntimeException e) {
       throw new ServiceExecutionException(e);
     }

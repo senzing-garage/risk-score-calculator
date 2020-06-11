@@ -67,19 +67,14 @@ public class RiskScoringServiceTest {
       @Mock
       public void init(String iniFile) throws ServiceSetupException {
       }
-      @Mock
-      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID) throws ServiceExecutionException {
-        return "[]";
-      }
     };
     new MockUp<DatabaseService>() {
       @Mock
       public void init(String url) throws SQLException {
       }
-    };
-    new MockUp<G2ServiceExt>() {
       @Mock
-      public void init(String iniFile) throws ServiceSetupException {
+      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID, int lensID) throws ServiceExecutionException {
+        return "[]";
       }
     };
   }
@@ -181,18 +176,16 @@ public class RiskScoringServiceTest {
         return ENTITY_MESSAGE_5;
       }
     };
-    new MockUp<G2ServiceExt>() {
-      @Mock
-      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID) throws ServiceExecutionException {
-        return "[{\"LIB_FEAT_ID\":" + ids.get(0) + ",\"USAGE_TYPE\":\"\",\"RES_ENT_ID\":33554}]";
-      }
-    };
     new MockUp<DatabaseService>() {
       @Mock
       public void postRiskScore(long entityID, int lensID, String qualityScore, String collisionScore, String reason) {
         assertThat(qualityScore.toString(), is(equalTo("Red")));
         assertThat(collisionScore.toString(), is(equalTo("Red")));
         assertThat(reason.toString(), containsString("F1E or F1ES shared"));
+      }
+      @Mock
+      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID, int lensID) throws ServiceExecutionException {
+        return "[{\"LIB_FEAT_ID\":" + ids.get(0) + ",\"USAGE_TYPE\":\"\",\"RES_ENT_ID\":33554}]";
       }
     };
     RiskScoringService service = new RiskScoringService();
@@ -365,18 +358,16 @@ public class RiskScoringServiceTest {
         return ENTITY_MESSAGE_13;
       }
     };
-    new MockUp<G2ServiceExt>() {
-      @Mock
-      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID) throws ServiceExecutionException {
-        return "[{\"LIB_FEAT_ID\":" + ids.get(0) + ",\"USAGE_TYPE\":\"\",\"RES_ENT_ID\":33554}]";
-      }
-    };
     new MockUp<DatabaseService>() {
       @Mock
       public void postRiskScore(long entityID, int lensID, String qualityScore, String collisionScore, String reason) {
         assertThat(qualityScore.toString(), is(equalTo("Green")));
         assertThat(collisionScore.toString(), is(equalTo("Yellow")));
         assertThat(reason.toString(), containsString("Shares F1 types"));
+      }
+      @Mock
+      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID, int lensID) throws ServiceExecutionException {
+        return "[{\"LIB_FEAT_ID\":" + ids.get(0) + ",\"USAGE_TYPE\":\"\",\"RES_ENT_ID\":33554}]";
       }
     };
     RiskScoringService service = new RiskScoringService();
@@ -415,18 +406,16 @@ public class RiskScoringServiceTest {
         return ENTITY_MESSAGE_15;
       }
     };
-    new MockUp<G2ServiceExt>() {
-      @Mock
-      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID) throws ServiceExecutionException {
-        return "[{\"LIB_FEAT_ID\":" + ids.get(0) + ",\"USAGE_TYPE\":\"\",\"RES_ENT_ID\":33554}]";
-      }
-    };
     new MockUp<DatabaseService>() {
       @Mock
       public void postRiskScore(long entityID, int lensID, String qualityScore, String collisionScore, String reason) {
         assertThat(qualityScore.toString(), is(equalTo("Green")));
         assertThat(collisionScore.toString(), is(equalTo("Green")));
         assertThat(reason.toString(), containsString("At least 1 iMDM record"));
+      }
+      @Mock
+      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID, int lensID) throws ServiceExecutionException {
+        return "[{\"LIB_FEAT_ID\":" + ids.get(0) + ",\"USAGE_TYPE\":\"\",\"RES_ENT_ID\":33554}]";
       }
     };
     RiskScoringService service = new RiskScoringService();
@@ -443,18 +432,16 @@ public class RiskScoringServiceTest {
         return ENTITY_MESSAGE_16;
       }
     };
-    new MockUp<G2ServiceExt>() {
-      @Mock
-      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID) throws ServiceExecutionException {
-        return "[{\"LIB_FEAT_ID\":" + ids.get(0) + ",\"USAGE_TYPE\":\"\",\"RES_ENT_ID\":33554}]";
-      }
-    };
     new MockUp<DatabaseService>() {
       @Mock
       public void postRiskScore(long entityID, int lensID, String qualityScore, String collisionScore, String reason) {
         assertThat(qualityScore.toString(), is(equalTo("Green")));
         assertThat(collisionScore.toString(), is(equalTo("Green")));
         assertThat(reason.toString(), containsString("At least 1 iMDM record"));
+      }
+      @Mock
+      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID, int lensID) throws ServiceExecutionException {
+        return "[{\"LIB_FEAT_ID\":" + ids.get(0) + ",\"USAGE_TYPE\":\"\",\"RES_ENT_ID\":33554}]";
       }
     };
     RiskScoringService service = new RiskScoringService();
@@ -471,18 +458,16 @@ public class RiskScoringServiceTest {
         return ENTITY_MESSAGE_17;
       }
     };
-    new MockUp<G2ServiceExt>() {
-      @Mock
-      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID) throws ServiceExecutionException {
-        return "[{\"LIB_FEAT_ID\":" + ids.get(0) + ",\"USAGE_TYPE\":\"\",\"RES_ENT_ID\":33554}]";
-      }
-    };
     new MockUp<DatabaseService>() {
       @Mock
       public void postRiskScore(long entityID, int lensID, String qualityScore, String collisionScore, String reason) {
         assertThat(qualityScore.toString(), is(equalTo("Red")));
         assertThat(collisionScore.toString(), is(equalTo("Red")));
         assertThat(reason.toString(), containsString("F1E or F1ES shared"));
+      }
+      @Mock
+      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID, int lensID) throws ServiceExecutionException {
+        return "[{\"LIB_FEAT_ID\":" + ids.get(0) + ",\"USAGE_TYPE\":\"\",\"RES_ENT_ID\":33554}]";
       }
     };
     RiskScoringService service = new RiskScoringService();
