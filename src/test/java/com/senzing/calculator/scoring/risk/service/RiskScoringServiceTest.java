@@ -45,6 +45,11 @@ public class RiskScoringServiceTest {
   private static final String ENTITY_MESSAGE_10 = "{\"RESOLVED_ENTITY\":{\"ENTITY_ID\":5,\"LENS_CODE\":\"DEFAULT\",\"FEATURES\":{\"ADDRESS\":[{\"FEAT_DESC\":\"808 STAR COURT LAS VEGAS NV 89111\",\"LIB_FEAT_ID\":3,\"UTYPE_CODE\":\"PRIMARY\",\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"808 STAR COURT LAS VEGAS NV 89111\",\"LIB_FEAT_ID\":3,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"DOB\":[{\"FEAT_DESC\":\"01-01-2000\",\"LIB_FEAT_ID\":70,\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"01-01-2000\",\"LIB_FEAT_ID\":70,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"SSN\":[{\"FEAT_DESC\":\"123-45-6789\",\"LIB_FEAT_ID\":80,\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"123-45-6789\",\"LIB_FEAT_ID\":80,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":2,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"REL_LINK\":[{\"FEAT_DESC\":\"OWNERSHIP 1003-1\",\"LIB_FEAT_ID\":33,\"UTYPE_CODE\":\"OWNER-OF\",\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"OWNERSHIP 1003-1\",\"LIB_FEAT_ID\":33,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"N\",\"ENTITY_COUNT\":2,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}]},\"RECORDS\":[{\"JSON_DATA\":{\"RECORD_ID\":\"1003-1\"},\"DATA_SOURCE\":\"IMDM\",\"ENTITY_TYPE\":\"PEOPLE\"}]},\"RELATED_ENTITIES\":[{\"ENTITY_ID\":2001,\"LENS_CODE\":\"DEFAULT\",\"MATCH_LEVEL\":2,\"MATCH_LEVEL_CODE\":\"POSSIBLY_SAME\",\"MATCH_KEY\":\"+NAME+ADDRESS (Ambiguous)\",\"MATCH_SCORE\":\"12\",\"ERRULE_CODE\":\"CNAME_CFF\",\"REF_SCORE\":6,\"IS_DISCLOSED\":0,\"IS_AMBIGUOUS\":0,\"ENTITY_NAME\":\"STEVE SMITH\"},{\"ENTITY_ID\":2,\"LENS_CODE\":\"DEFAULT\",\"MATCH_LEVEL\":3,\"MATCH_LEVEL_CODE\":\"POSSIBLY_RELATED\",\"MATCH_KEY\":\"+SURNAME+ADDRESS\",\"MATCH_SCORE\":\"12\",\"ERRULE_CODE\":\"CFF_SURNAME\",\"REF_SCORE\":4,\"IS_DISCLOSED\":0,\"IS_AMBIGUOUS\":0,\"ENTITY_NAME\":\"JENNY SMITH\"}]}";  
   private static final String ENTITY_MESSAGE_11 = "{\"RESOLVED_ENTITY\":{\"ENTITY_ID\":5,\"LENS_CODE\":\"DEFAULT\",\"FEATURES\":{\"ADDRESS\":[{\"FEAT_DESC\":\"808 STAR COURT LAS VEGAS NV 89111\",\"LIB_FEAT_ID\":3,\"UTYPE_CODE\":\"PRIMARY\",\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"808 STAR COURT LAS VEGAS NV 89111\",\"LIB_FEAT_ID\":3,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"DOB\":[{\"FEAT_DESC\":\"01-01-2000\",\"LIB_FEAT_ID\":70,\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"01-01-2000\",\"LIB_FEAT_ID\":70,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"SSN\":[{\"FEAT_DESC\":\"123-45-6789\",\"LIB_FEAT_ID\":80,\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"123-45-6789\",\"LIB_FEAT_ID\":80,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":2,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"REL_LINK\":[{\"FEAT_DESC\":\"OWNERSHIP 1003-1\",\"LIB_FEAT_ID\":33,\"UTYPE_CODE\":\"OWNER-OF\",\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"OWNERSHIP 1003-1\",\"LIB_FEAT_ID\":33,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"N\",\"ENTITY_COUNT\":2,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}]},\"RECORDS\":[{\"JSON_DATA\":{\"RECORD_ID\":\"1003-1\"},\"DATA_SOURCE\":\"IMDM\",\"ENTITY_TYPE\":\"PEOPLE\"}]},\"RELATED_ENTITIES\":[{\"ENTITY_ID\":2001,\"LENS_CODE\":\"DEFAULT\",\"MATCH_LEVEL\":2,\"MATCH_LEVEL_CODE\":\"POSSIBLY_RELATED\",\"MATCH_KEY\":\"+NAME+ADDRESS (Ambiguous)\",\"MATCH_SCORE\":\"12\",\"ERRULE_CODE\":\"CNAME_CFF\",\"REF_SCORE\":6,\"IS_DISCLOSED\":0,\"IS_AMBIGUOUS\":0,\"ENTITY_NAME\":\"STEVE SMITH\"},{\"ENTITY_ID\":2,\"LENS_CODE\":\"DEFAULT\",\"MATCH_LEVEL\":3,\"MATCH_LEVEL_CODE\":\"POSSIBLY_RELATED\",\"MATCH_KEY\":\"+SURNAME+ADDRESS\",\"MATCH_SCORE\":\"12\",\"ERRULE_CODE\":\"CFF_SURNAME\",\"REF_SCORE\":4,\"IS_DISCLOSED\":0,\"IS_AMBIGUOUS\":0,\"ENTITY_NAME\":\"JENNY SMITH\"}]}";  
   private static final String ENTITY_MESSAGE_12 = "{\"RESOLVED_ENTITY\":{\"ENTITY_ID\":5,\"LENS_CODE\":\"DEFAULT\",\"FEATURES\":{\"ADDRESS\":[{\"FEAT_DESC\":\"808 STAR COURT LAS VEGAS NV 89111\",\"LIB_FEAT_ID\":3,\"UTYPE_CODE\":\"PRIMARY\",\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"808 STAR COURT LAS VEGAS NV 89111\",\"LIB_FEAT_ID\":3,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"DOB\":[{\"FEAT_DESC\":\"01-01-2000\",\"LIB_FEAT_ID\":70,\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"01-01-2000\",\"LIB_FEAT_ID\":70,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"RISK_SCORE_OVERRIDE\":[{\"FEAT_DESC\":\"Red\",\"LIB_FEAT_ID\":105}],\"SSN\":[{\"FEAT_DESC\":\"123-45-6789\",\"LIB_FEAT_ID\":80,\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"123-45-6789\",\"LIB_FEAT_ID\":80,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":2,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"REL_LINK\":[{\"FEAT_DESC\":\"OWNERSHIP 1003-1\",\"LIB_FEAT_ID\":33,\"UTYPE_CODE\":\"OWNER-OF\",\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"OWNERSHIP 1003-1\",\"LIB_FEAT_ID\":33,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"N\",\"ENTITY_COUNT\":2,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}]},\"RECORDS\":[{\"JSON_DATA\":{\"RECORD_ID\":\"1003-1\"},\"DATA_SOURCE\":\"IMDM\",\"ENTITY_TYPE\":\"PEOPLE\"}]},\"RELATED_ENTITIES\":[{\"ENTITY_ID\":2001,\"LENS_CODE\":\"DEFAULT\",\"MATCH_LEVEL\":2,\"MATCH_LEVEL_CODE\":\"POSSIBLY_RELATED\",\"MATCH_KEY\":\"+NAME+ADDRESS (Ambiguous)\",\"MATCH_SCORE\":\"12\",\"ERRULE_CODE\":\"CNAME_CFF\",\"REF_SCORE\":6,\"IS_DISCLOSED\":0,\"IS_AMBIGUOUS\":0,\"ENTITY_NAME\":\"STEVE SMITH\"},{\"ENTITY_ID\":2,\"LENS_CODE\":\"DEFAULT\",\"MATCH_LEVEL\":3,\"MATCH_LEVEL_CODE\":\"POSSIBLY_RELATED\",\"MATCH_KEY\":\"+SURNAME+ADDRESS\",\"MATCH_SCORE\":\"12\",\"ERRULE_CODE\":\"CFF_SURNAME\",\"REF_SCORE\":4,\"IS_DISCLOSED\":0,\"IS_AMBIGUOUS\":0,\"ENTITY_NAME\":\"JENNY SMITH\"}]}";  
+  private static final String ENTITY_MESSAGE_13 = "{\"RESOLVED_ENTITY\":{\"ENTITY_ID\":5,\"LENS_CODE\":\"DEFAULT\",\"FEATURES\":{\"ADDRESS\":[{\"FEAT_DESC\":\"808 STAR COURT LAS VEGAS NV 89111\",\"LIB_FEAT_ID\":3,\"UTYPE_CODE\":\"PRIMARY\",\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"808 STAR COURT LAS VEGAS NV 89111\",\"LIB_FEAT_ID\":3,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"DOB\":[{\"FEAT_DESC\":\"01-01-2000\",\"LIB_FEAT_ID\":70,\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"01-01-2000\",\"LIB_FEAT_ID\":70,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"ID_KEY\":[{\"FEAT_DESC\":\"123-45-6789\",\"LIB_FEAT_ID\":111,\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"123-45-6789\",\"LIB_FEAT_ID\":111,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\"}]}],\"REL_LINK\":[{\"FEAT_DESC\":\"OWNERSHIP 1003-1\",\"LIB_FEAT_ID\":33,\"UTYPE_CODE\":\"OWNER-OF\",\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"OWNERSHIP 1003-1\",\"LIB_FEAT_ID\":33,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"N\",\"ENTITY_COUNT\":2,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}]},\"RECORDS\":[{\"JSON_DATA\":{\"RECORD_ID\":\"1003-1\"},\"DATA_SOURCE\":\"IMDM\",\"ENTITY_TYPE\":\"PEOPLE\"}]},\"RELATED_ENTITIES\":[{\"ENTITY_ID\":2001,\"LENS_CODE\":\"DEFAULT\",\"MATCH_LEVEL\":2,\"MATCH_LEVEL_CODE\":\"POSSIBLY_RELATED\",\"MATCH_KEY\":\"+NAME+ADDRESS (Ambiguous)\",\"MATCH_SCORE\":\"12\",\"ERRULE_CODE\":\"CNAME_CFF\",\"REF_SCORE\":6,\"IS_DISCLOSED\":0,\"IS_AMBIGUOUS\":0,\"ENTITY_NAME\":\"STEVE SMITH\"},{\"ENTITY_ID\":2,\"LENS_CODE\":\"DEFAULT\",\"MATCH_LEVEL\":3,\"MATCH_LEVEL_CODE\":\"POSSIBLY_RELATED\",\"MATCH_KEY\":\"+SURNAME+ADDRESS\",\"MATCH_SCORE\":\"12\",\"ERRULE_CODE\":\"CFF_SURNAME\",\"REF_SCORE\":4,\"IS_DISCLOSED\":0,\"IS_AMBIGUOUS\":0,\"ENTITY_NAME\":\"JENNY SMITH\"}]}";
+  private static final String ENTITY_MESSAGE_14 = "{\"RESOLVED_ENTITY\":{\"ENTITY_ID\":5,\"LENS_CODE\":\"DEFAULT\",\"FEATURES\":{\"DOB\":[{\"FEAT_DESC\":\"01-01-2000\",\"LIB_FEAT_ID\":70,\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"01-01-2000\",\"LIB_FEAT_ID\":70,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"SSN\":[{\"FEAT_DESC\":\"123-45-6789\",\"LIB_FEAT_ID\":80,\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"123-45-6789\",\"LIB_FEAT_ID\":80,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":2,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"REL_LINK\":[{\"FEAT_DESC\":\"OWNERSHIP 1003-1\",\"LIB_FEAT_ID\":33,\"UTYPE_CODE\":\"OWNER-OF\",\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"OWNERSHIP 1003-1\",\"LIB_FEAT_ID\":33,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"N\",\"ENTITY_COUNT\":2,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}]},\"RECORDS\":[{\"JSON_DATA\":{\"RECORD_ID\":\"1003-1\"},\"DATA_SOURCE\":\"IMDM\",\"ENTITY_TYPE\":\"PEOPLE\"}]},\"RELATED_ENTITIES\":[{\"ENTITY_ID\":2001,\"LENS_CODE\":\"DEFAULT\",\"MATCH_LEVEL\":2,\"MATCH_LEVEL_CODE\":\"POSSIBLY_RELATED\",\"MATCH_KEY\":\"+NAME+ADDRESS (Ambiguous)\",\"MATCH_SCORE\":\"12\",\"ERRULE_CODE\":\"CNAME_CFF\",\"REF_SCORE\":6,\"IS_DISCLOSED\":0,\"IS_AMBIGUOUS\":0,\"ENTITY_NAME\":\"STEVE SMITH\"},{\"ENTITY_ID\":2,\"LENS_CODE\":\"DEFAULT\",\"MATCH_LEVEL\":3,\"MATCH_LEVEL_CODE\":\"POSSIBLY_RELATED\",\"MATCH_KEY\":\"+SURNAME+ADDRESS\",\"MATCH_SCORE\":\"12\",\"ERRULE_CODE\":\"CFF_SURNAME\",\"REF_SCORE\":4,\"IS_DISCLOSED\":0,\"IS_AMBIGUOUS\":0,\"ENTITY_NAME\":\"JENNY SMITH\"}]}";
+  private static final String ENTITY_MESSAGE_15 = "{\"RESOLVED_ENTITY\":{\"ENTITY_ID\":5,\"LENS_CODE\":\"DEFAULT\",\"FEATURES\":{\"ADDRESS\":[{\"FEAT_DESC\":\"808 STAR COURT LAS VEGAS NV 89111\",\"LIB_FEAT_ID\":3,\"UTYPE_CODE\":\"PRIMARY\",\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"808 STAR COURT LAS VEGAS NV 89111\",\"LIB_FEAT_ID\":3,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"DOB\":[{\"FEAT_DESC\":\"01-01-2000\",\"LIB_FEAT_ID\":70,\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"01-01-2000\",\"LIB_FEAT_ID\":70,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"ID_KEY\":[{\"FEAT_DESC\":\"123-45-6789\",\"LIB_FEAT_ID\":111,\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"123-45-6789\",\"LIB_FEAT_ID\":111,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"Y\",\"SCORING_CAP_REACHED\":\"N\"}]}],\"REL_LINK\":[{\"FEAT_DESC\":\"OWNERSHIP 1003-1\",\"LIB_FEAT_ID\":33,\"UTYPE_CODE\":\"OWNER-OF\",\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"OWNERSHIP 1003-1\",\"LIB_FEAT_ID\":33,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"N\",\"ENTITY_COUNT\":2,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}]},\"RECORDS\":[{\"JSON_DATA\":{\"RECORD_ID\":\"1003-1\"},\"DATA_SOURCE\":\"IMDM\",\"ENTITY_TYPE\":\"PEOPLE\"}]},\"RELATED_ENTITIES\":[{\"ENTITY_ID\":2001,\"LENS_CODE\":\"DEFAULT\",\"MATCH_LEVEL\":2,\"MATCH_LEVEL_CODE\":\"POSSIBLY_RELATED\",\"MATCH_KEY\":\"+NAME+ADDRESS (Ambiguous)\",\"MATCH_SCORE\":\"12\",\"ERRULE_CODE\":\"CNAME_CFF\",\"REF_SCORE\":6,\"IS_DISCLOSED\":0,\"IS_AMBIGUOUS\":0,\"ENTITY_NAME\":\"STEVE SMITH\"},{\"ENTITY_ID\":2,\"LENS_CODE\":\"DEFAULT\",\"MATCH_LEVEL\":3,\"MATCH_LEVEL_CODE\":\"POSSIBLY_RELATED\",\"MATCH_KEY\":\"+SURNAME+ADDRESS\",\"MATCH_SCORE\":\"12\",\"ERRULE_CODE\":\"CFF_SURNAME\",\"REF_SCORE\":4,\"IS_DISCLOSED\":0,\"IS_AMBIGUOUS\":0,\"ENTITY_NAME\":\"JENNY SMITH\"}]}";
+  private static final String ENTITY_MESSAGE_16 = "{\"RESOLVED_ENTITY\":{\"ENTITY_ID\":5,\"LENS_CODE\":\"DEFAULT\",\"FEATURES\":{\"ADDRESS\":[{\"FEAT_DESC\":\"808 STAR COURT LAS VEGAS NV 89111\",\"LIB_FEAT_ID\":3,\"UTYPE_CODE\":\"PRIMARY\",\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"808 STAR COURT LAS VEGAS NV 89111\",\"LIB_FEAT_ID\":3,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"DOB\":[{\"FEAT_DESC\":\"01-01-2000\",\"LIB_FEAT_ID\":70,\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"01-01-2000\",\"LIB_FEAT_ID\":70,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"ID_KEY\":[{\"FEAT_DESC\":\"123-45-6789\",\"LIB_FEAT_ID\":111,\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"123-45-6789\",\"LIB_FEAT_ID\":111,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"Y\"}]}],\"REL_LINK\":[{\"FEAT_DESC\":\"OWNERSHIP 1003-1\",\"LIB_FEAT_ID\":33,\"UTYPE_CODE\":\"OWNER-OF\",\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"OWNERSHIP 1003-1\",\"LIB_FEAT_ID\":33,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"N\",\"ENTITY_COUNT\":2,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}]},\"RECORDS\":[{\"JSON_DATA\":{\"RECORD_ID\":\"1003-1\"},\"DATA_SOURCE\":\"IMDM\",\"ENTITY_TYPE\":\"PEOPLE\"}]},\"RELATED_ENTITIES\":[{\"ENTITY_ID\":2001,\"LENS_CODE\":\"DEFAULT\",\"MATCH_LEVEL\":2,\"MATCH_LEVEL_CODE\":\"POSSIBLY_RELATED\",\"MATCH_KEY\":\"+NAME+ADDRESS (Ambiguous)\",\"MATCH_SCORE\":\"12\",\"ERRULE_CODE\":\"CNAME_CFF\",\"REF_SCORE\":6,\"IS_DISCLOSED\":0,\"IS_AMBIGUOUS\":0,\"ENTITY_NAME\":\"STEVE SMITH\"},{\"ENTITY_ID\":2,\"LENS_CODE\":\"DEFAULT\",\"MATCH_LEVEL\":3,\"MATCH_LEVEL_CODE\":\"POSSIBLY_RELATED\",\"MATCH_KEY\":\"+SURNAME+ADDRESS\",\"MATCH_SCORE\":\"12\",\"ERRULE_CODE\":\"CFF_SURNAME\",\"REF_SCORE\":4,\"IS_DISCLOSED\":0,\"IS_AMBIGUOUS\":0,\"ENTITY_NAME\":\"JENNY SMITH\"}]}";
+  private static final String ENTITY_MESSAGE_17 = "{\"RESOLVED_ENTITY\":{\"ENTITY_ID\":5,\"LENS_CODE\":\"DEFAULT\",\"FEATURES\":{\"ADDRESS\":[{\"FEAT_DESC\":\"808 STAR COURT LAS VEGAS NV 89111\",\"LIB_FEAT_ID\":3,\"UTYPE_CODE\":\"PRIMARY\",\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"808 STAR COURT LAS VEGAS NV 89111\",\"LIB_FEAT_ID\":3,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"NAME\":[{\"FEAT_DESC\":\"STEVE SMITH\",\"LIB_FEAT_ID\":1,\"UTYPE_CODE\":\"PRIMARY\",\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"STEVE SMITH\",\"LIB_FEAT_ID\":1,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":3,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}],\"DRLIC\":[{\"FEAT_DESC\":\"1234567890123\",\"LIB_FEAT_ID\":50,\"UTYPE_CODE\":\"PRIMARY\",\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"1234567890123\",\"LIB_FEAT_ID\":50,\"USED_FOR_CAND\":\"Y\",\"USED_FOR_SCORING\":\"Y\",\"ENTITY_COUNT\":2,\"CANDIDATE_CAP_REACHED\":\"Y\",\"SCORING_CAP_REACHED\":\"Y\",\"SUPPRESSED\":\"N\"}]}],\"REL_LINK\":[{\"FEAT_DESC\":\"OWNERSHIP 1003-1\",\"LIB_FEAT_ID\":33,\"UTYPE_CODE\":\"OWNER-OF\",\"FEAT_DESC_VALUES\":[{\"FEAT_DESC\":\"OWNERSHIP 1003-1\",\"LIB_FEAT_ID\":33,\"USED_FOR_CAND\":\"N\",\"USED_FOR_SCORING\":\"N\",\"ENTITY_COUNT\":2,\"CANDIDATE_CAP_REACHED\":\"N\",\"SCORING_CAP_REACHED\":\"N\",\"SUPPRESSED\":\"N\"}]}]},\"RECORDS\":[{\"JSON_DATA\":{\"RECORD_ID\":\"1003-1\"},\"DATA_SOURCE\":\"PEOPLE\",\"ENTITY_TYPE\":\"PEOPLE\"}]},\"RELATED_ENTITIES\":[{\"ENTITY_ID\":2001,\"LENS_CODE\":\"DEFAULT\",\"MATCH_LEVEL\":3,\"MATCH_LEVEL_CODE\":\"POSSIBLY_RELATED\",\"MATCH_KEY\":\"+NAME+ADDRESS (Ambiguous)\",\"MATCH_SCORE\":\"12\",\"ERRULE_CODE\":\"CNAME_CFF\",\"REF_SCORE\":6,\"IS_DISCLOSED\":0,\"IS_AMBIGUOUS\":0,\"ENTITY_NAME\":\"STEVE SMITH\"},{\"ENTITY_ID\":2,\"LENS_CODE\":\"DEFAULT\",\"MATCH_LEVEL\":3,\"MATCH_LEVEL_CODE\":\"POSSIBLY_RELATED\",\"MATCH_KEY\":\"+SURNAME+ADDRESS\",\"MATCH_SCORE\":\"12\",\"ERRULE_CODE\":\"CFF_SURNAME\",\"REF_SCORE\":4,\"IS_DISCLOSED\":0,\"IS_AMBIGUOUS\":0,\"ENTITY_NAME\":\"JENNY SMITH\"}]}";  
 
   @Before
   public void setupTest() throws IOException {
@@ -62,19 +67,14 @@ public class RiskScoringServiceTest {
       @Mock
       public void init(String iniFile) throws ServiceSetupException {
       }
-      @Mock
-      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID) throws ServiceExecutionException {
-        return "[]";
-      }
     };
     new MockUp<DatabaseService>() {
       @Mock
       public void init(String url) throws SQLException {
       }
-    };
-    new MockUp<G2ServiceExt>() {
       @Mock
-      public void init(String iniFile) throws ServiceSetupException {
+      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID, int lensID) throws ServiceExecutionException {
+        return "[]";
       }
     };
   }
@@ -168,18 +168,12 @@ public class RiskScoringServiceTest {
   }
 
   @Test
-  public void processWithSharedExclisives() throws ServiceExecutionException, ServiceSetupException {
+  public void processWithSharedExclusives() throws ServiceExecutionException, ServiceSetupException {
 
     new MockUp<G2Service>() {
       @Mock
       public String getEntity(long g2EntiyId, boolean includeFullFeatures, boolean includeFeatureStats) throws ServiceExecutionException {
         return ENTITY_MESSAGE_5;
-      }
-    };
-    new MockUp<G2ServiceExt>() {
-      @Mock
-      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID) throws ServiceExecutionException {
-        return "[{\"RES_ENTIT_ID\":120,\"UTYPE\":\"\",\"FTYPE_ID\":15}]";
       }
     };
     new MockUp<DatabaseService>() {
@@ -188,6 +182,10 @@ public class RiskScoringServiceTest {
         assertThat(qualityScore.toString(), is(equalTo("Red")));
         assertThat(collisionScore.toString(), is(equalTo("Red")));
         assertThat(reason.toString(), containsString("F1E or F1ES shared"));
+      }
+      @Mock
+      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID, int lensID) throws ServiceExecutionException {
+        return "[{\"LIB_FEAT_ID\":" + ids.get(0) + ",\"USAGE_TYPE\":\"\",\"RES_ENT_ID\":33554}]";
       }
     };
     RiskScoringService service = new RiskScoringService();
@@ -201,7 +199,7 @@ public class RiskScoringServiceTest {
     new MockUp<G2Service>() {
       @Mock
       public String getEntity(long g2EntiyId, boolean includeFullFeatures, boolean includeFeatureStats) throws ServiceExecutionException {
-        return ENTITY_MESSAGE_6;
+        return ENTITY_MESSAGE_8;
       }
     };
     new MockUp<DatabaseService>() {
@@ -245,7 +243,7 @@ public class RiskScoringServiceTest {
     new MockUp<G2Service>() {
       @Mock
       public String getEntity(long g2EntiyId, boolean includeFullFeatures, boolean includeFeatureStats) throws ServiceExecutionException {
-        return ENTITY_MESSAGE_8;
+        return ENTITY_MESSAGE_6;
       }
     };
     new MockUp<DatabaseService>() {
@@ -253,7 +251,7 @@ public class RiskScoringServiceTest {
       public void postRiskScore(long entityID, int lensID, String qualityScore, String collisionScore, String reason) {
         assertThat(qualityScore.toString(), is(equalTo("Yellow")));
         assertThat(collisionScore.toString(), is(equalTo("Yellow")));
-        assertThat(reason.toString(), containsString("Not one and only one SSN"));
+        assertThat(reason.toString(), containsString("No iMDM record"));
       }
     };
     RiskScoringService service = new RiskScoringService();
@@ -273,9 +271,9 @@ public class RiskScoringServiceTest {
     new MockUp<DatabaseService>() {
       @Mock
       public void postRiskScore(long entityID, int lensID, String qualityScore, String collisionScore, String reason) {
-        assertThat(qualityScore.toString(), is(equalTo("Yellow")));
-        assertThat(collisionScore.toString(), is(equalTo("Yellow")));
-        assertThat(reason.toString(), containsString("Not one and only one SSN"));
+        assertThat(qualityScore.toString(), is(equalTo("Red")));
+        assertThat(collisionScore.toString(), is(equalTo("Red")));
+        assertThat(reason.toString(), containsString("More than one F1E or F1E"));
       }
     };
     RiskScoringService service = new RiskScoringService();
@@ -298,6 +296,7 @@ public class RiskScoringServiceTest {
         assertThat(qualityScore.toString(), is(equalTo("Green")));
         assertThat(collisionScore.toString(), is(equalTo("Yellow")));
         assertThat(reason.toString(), containsString("At least 1 iMDM record"));
+        assertThat(reason.toString(), containsString("One or less SSN"));
         assertThat(reason.toString(), containsString("Possible match exists"));
       }
     };
@@ -343,6 +342,132 @@ public class RiskScoringServiceTest {
         assertThat(qualityScore.toString(), is(equalTo("Green")));
         assertThat(collisionScore.toString(), is(equalTo("Red")));
         assertThat(reason.toString(), containsString("\"Manually flagged red"));
+      }
+    };
+    RiskScoringService service = new RiskScoringService();
+    service.init(CONFIG);
+    service.process(INPUT_MESSAGE);
+  }
+
+  @Test
+  public void processWithF1Shared() throws ServiceExecutionException, ServiceSetupException {
+
+    new MockUp<G2Service>() {
+      @Mock
+      public String getEntity(long g2EntiyId, boolean includeFullFeatures, boolean includeFeatureStats) throws ServiceExecutionException {
+        return ENTITY_MESSAGE_13;
+      }
+    };
+    new MockUp<DatabaseService>() {
+      @Mock
+      public void postRiskScore(long entityID, int lensID, String qualityScore, String collisionScore, String reason) {
+        assertThat(qualityScore.toString(), is(equalTo("Green")));
+        assertThat(collisionScore.toString(), is(equalTo("Yellow")));
+        assertThat(reason.toString(), containsString("Shares F1 types"));
+      }
+      @Mock
+      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID, int lensID) throws ServiceExecutionException {
+        return "[{\"LIB_FEAT_ID\":" + ids.get(0) + ",\"USAGE_TYPE\":\"\",\"RES_ENT_ID\":33554}]";
+      }
+    };
+    RiskScoringService service = new RiskScoringService();
+    service.init(CONFIG);
+    service.process(INPUT_MESSAGE);
+  }
+
+  @Test
+  public void processHavingNoAddress() throws ServiceExecutionException, ServiceSetupException {
+
+    new MockUp<G2Service>() {
+      @Mock
+      public String getEntity(long g2EntiyId, boolean includeFullFeatures, boolean includeFeatureStats) throws ServiceExecutionException {
+        return ENTITY_MESSAGE_14;
+      }
+    };
+    new MockUp<DatabaseService>() {
+      @Mock
+      public void postRiskScore(long entityID, int lensID, String qualityScore, String collisionScore, String reason) {
+        assertThat(qualityScore.toString(), is(equalTo("Yellow")));
+        assertThat(collisionScore.toString(), is(equalTo("Yellow")));
+        assertThat(reason.toString(), containsString("No address"));
+      }
+    };
+    RiskScoringService service = new RiskScoringService();
+    service.init(CONFIG);
+    service.process(INPUT_MESSAGE);
+  }
+
+  @Test
+  public void processWithF1SharedCandidateGoneGeneric() throws ServiceExecutionException, ServiceSetupException {
+
+    new MockUp<G2Service>() {
+      @Mock
+      public String getEntity(long g2EntiyId, boolean includeFullFeatures, boolean includeFeatureStats) throws ServiceExecutionException {
+        return ENTITY_MESSAGE_15;
+      }
+    };
+    new MockUp<DatabaseService>() {
+      @Mock
+      public void postRiskScore(long entityID, int lensID, String qualityScore, String collisionScore, String reason) {
+        assertThat(qualityScore.toString(), is(equalTo("Green")));
+        assertThat(collisionScore.toString(), is(equalTo("Green")));
+        assertThat(reason.toString(), containsString("At least 1 iMDM record"));
+      }
+      @Mock
+      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID, int lensID) throws ServiceExecutionException {
+        return "[{\"LIB_FEAT_ID\":" + ids.get(0) + ",\"USAGE_TYPE\":\"\",\"RES_ENT_ID\":33554}]";
+      }
+    };
+    RiskScoringService service = new RiskScoringService();
+    service.init(CONFIG);
+    service.process(INPUT_MESSAGE);
+  }
+
+  @Test
+  public void processWithF1SharedScoringGoneGeneric() throws ServiceExecutionException, ServiceSetupException {
+
+    new MockUp<G2Service>() {
+      @Mock
+      public String getEntity(long g2EntiyId, boolean includeFullFeatures, boolean includeFeatureStats) throws ServiceExecutionException {
+        return ENTITY_MESSAGE_16;
+      }
+    };
+    new MockUp<DatabaseService>() {
+      @Mock
+      public void postRiskScore(long entityID, int lensID, String qualityScore, String collisionScore, String reason) {
+        assertThat(qualityScore.toString(), is(equalTo("Green")));
+        assertThat(collisionScore.toString(), is(equalTo("Green")));
+        assertThat(reason.toString(), containsString("At least 1 iMDM record"));
+      }
+      @Mock
+      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID, int lensID) throws ServiceExecutionException {
+        return "[{\"LIB_FEAT_ID\":" + ids.get(0) + ",\"USAGE_TYPE\":\"\",\"RES_ENT_ID\":33554}]";
+      }
+    };
+    RiskScoringService service = new RiskScoringService();
+    service.init(CONFIG);
+    service.process(INPUT_MESSAGE);
+  }
+
+  @Test
+  public void processWithSharedExclusivesGoneGeneric() throws ServiceExecutionException, ServiceSetupException {
+
+    new MockUp<G2Service>() {
+      @Mock
+      public String getEntity(long g2EntiyId, boolean includeFullFeatures, boolean includeFeatureStats) throws ServiceExecutionException {
+        return ENTITY_MESSAGE_17;
+      }
+    };
+    new MockUp<DatabaseService>() {
+      @Mock
+      public void postRiskScore(long entityID, int lensID, String qualityScore, String collisionScore, String reason) {
+        assertThat(qualityScore.toString(), is(equalTo("Red")));
+        assertThat(collisionScore.toString(), is(equalTo("Red")));
+        assertThat(reason.toString(), containsString("F1E or F1ES shared"));
+      }
+      @Mock
+      public String findEntitiesByFeatureIDs(List<Long> ids, long entityID, int lensID) throws ServiceExecutionException {
+        return "[{\"LIB_FEAT_ID\":" + ids.get(0) + ",\"USAGE_TYPE\":\"\",\"RES_ENT_ID\":33554}]";
       }
     };
     RiskScoringService service = new RiskScoringService();
