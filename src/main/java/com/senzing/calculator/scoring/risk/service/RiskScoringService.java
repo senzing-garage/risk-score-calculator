@@ -102,6 +102,7 @@ public class RiskScoringService implements ListenerService {
   boolean serviceUp;
 
   private static long processCount = 0;
+  private static long missingEntityCount = 0;
 
   @Override
   public void init(String config) throws ServiceSetupException {
@@ -204,8 +205,7 @@ public class RiskScoringService implements ListenerService {
       entityData = g2Service.getEntity(entityID, false, true);
     } catch (ServiceExecutionException e) {
       if (e.getMessage().contains("Unknown resolved entity value")) {
-        System.err.println(e.getMessage());
-        System.err.println("Failed to get entity " + entityID);
+        missingEntityCount++;
       } else {
         // Bail out if any other error
         e.printStackTrace();
@@ -593,7 +593,12 @@ public class RiskScoringService implements ListenerService {
     processCount++;
     if (processCount % 1000 == 0) {
       Date current = new Date();
-      System.out.println(current.toInstant() + " - Processed " + processCount + " records.");
+      String timeStamp = current.toInstant().toString();
+      String filler = " ".repeat(timeStamp.length());
+      System.out.println(timeStamp + " - Processed " + processCount + " records.");
+      System.out.println(filler + " - Missing entity count for last 1000:    " + missingEntityCount);
+      System.out.println(filler + " - Missing entity percent for last 1000:  " + missingEntityCount/10 + "%");
+      missingEntityCount = 0; 
     }
   }
 
