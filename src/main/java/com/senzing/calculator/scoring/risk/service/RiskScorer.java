@@ -51,7 +51,7 @@ public class RiskScorer {
   // Green quality.
   private boolean oneAndOnlyOneDOB;
   private boolean oneOrLessSSN;
-  private boolean hasTrustedSource;
+  private List<String> trustedSources;
   private boolean oneOrMoreAddress;
 
   // Override for data quality scores
@@ -100,9 +100,9 @@ public class RiskScorer {
     sharedF1s = new ArrayList<>();
     oneAndOnlyOneDOB = false;
     oneOrLessSSN = false;
-    hasTrustedSource = false;
     oneOrMoreAddress = false;
     sharedExclusives = new ArrayList<>();
+    trustedSources = new ArrayList<>();
   }
 
   public boolean isAmbiguous() {
@@ -145,12 +145,12 @@ public class RiskScorer {
     this.oneOrLessSSN = oneOrLessSSN;
   }
 
-  public boolean hasTrustedSource() {
-    return hasTrustedSource;
+  public List<String> getTrustedSources() {
+    return trustedSources;
   }
 
-  public void setTrustedSource(boolean hasTrustedSource) {
-    this.hasTrustedSource = hasTrustedSource;
+  public void addTrustedSource(String trustedSource) {
+    trustedSources.add(trustedSource);
   }
 
   public boolean hasNoPossibleMatch() {
@@ -215,7 +215,7 @@ public class RiskScorer {
    */
   public RiskScore getDataQualityScore() {
     boolean isRed = ambiguous || !multipleExclusives.isEmpty() || !sharedExclusives.isEmpty() || mutltipleDOBs;
-    boolean isGreen = hasTrustedSource && oneAndOnlyOneDOB && oneOrLessSSN && oneOrMoreAddress;
+    boolean isGreen = !trustedSources.isEmpty() && oneAndOnlyOneDOB && oneOrLessSSN && oneOrMoreAddress;
     
     if (isRed) {
       return RiskScore.Red;
@@ -282,8 +282,8 @@ public class RiskScorer {
       }
       collisionReasons.add(RED_DATA_QUALITY);
     } else if (qualityScore == RiskScore.Green) {
-      if (hasTrustedSource) {
-        qualityReasons.add(TRUSTED_SOURCE_EXISTS);
+      if (!trustedSources.isEmpty()) {
+        qualityReasons.add(TRUSTED_SOURCE_EXISTS + " - " + trustedSources);
       }
       if (oneAndOnlyOneDOB) {
         qualityReasons.add(ONE_DOB);
@@ -295,7 +295,7 @@ public class RiskScorer {
         qualityReasons.add(ONE_OR_MORE_ADDRESS);
       }
     } else {
-      if (!hasTrustedSource) {
+      if (trustedSources.isEmpty()) {
         qualityReasons.add(NO_TRUSTED_SOURCE);
       }
       if (!oneAndOnlyOneDOB) {

@@ -296,6 +296,7 @@ public class RiskScoringServiceTest {
         assertThat(qualityScore.toString(), is(equalTo("Green")));
         assertThat(collisionScore.toString(), is(equalTo("Yellow")));
         assertThat(reason.toString(), containsString("At least 1 trusted source record"));
+        assertThat(reason.toString(), containsString("TRUSTSOURCE"));
         assertThat(reason.toString(), containsString("One or less SSN"));
         assertThat(reason.toString(), containsString("Possible match exists"));
       }
@@ -412,6 +413,7 @@ public class RiskScoringServiceTest {
         assertThat(qualityScore.toString(), is(equalTo("Green")));
         assertThat(collisionScore.toString(), is(equalTo("Green")));
         assertThat(reason.toString(), containsString("At least 1 trusted source record"));
+        assertThat(reason.toString(), containsString("TRUSTSOURCE"));
       }
       @Mock
       public String findEntitiesByFeatureIDs(List<Long> ids, long entityID, int lensID) throws ServiceExecutionException {
@@ -438,6 +440,7 @@ public class RiskScoringServiceTest {
         assertThat(qualityScore.toString(), is(equalTo("Green")));
         assertThat(collisionScore.toString(), is(equalTo("Green")));
         assertThat(reason.toString(), containsString("At least 1 trusted source record"));
+        assertThat(reason.toString(), containsString("TRUSTSOURCE"));
       }
       @Mock
       public String findEntitiesByFeatureIDs(List<Long> ids, long entityID, int lensID) throws ServiceExecutionException {

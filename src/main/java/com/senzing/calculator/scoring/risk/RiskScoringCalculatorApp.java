@@ -14,8 +14,6 @@ import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
-
 import com.senzing.calculator.scoring.risk.config.AppConfiguration;
 import com.senzing.calculator.scoring.risk.config.ConfigKeys;
 import com.senzing.calculator.scoring.risk.data.CommandOptions;
@@ -69,6 +67,7 @@ public class RiskScoringCalculatorApp {
     // Options for risk scoring servive.
     options.addOption(CommandOptions.INI_FILE, true, "Path to the G2 ini file");
     options.addOption(CommandOptions.JDBC_CONNECTION, true, "Connection string for the G2 database");
+    options.addOption(CommandOptions.TRUSTED_SOURCES, true, "List of trusted sources used for scoring");
     // Options for consumer.
     options.addOption(ConsumerCommandOptions.MQ_HOST, true, "Host for RabbitMQ");
     options.addOption(ConsumerCommandOptions.MQ_USER, true, "User name for RabbitMQ");
@@ -81,6 +80,7 @@ public class RiskScoringCalculatorApp {
 
     addCommandLineValue(commandLine, CommandOptions.INI_FILE);
     addCommandLineValue(commandLine, CommandOptions.JDBC_CONNECTION);
+    addCommandLineValue(commandLine, CommandOptions.TRUSTED_SOURCES);
     addCommandLineValue(commandLine, ConsumerCommandOptions.MQ_HOST);
     addCommandLineValue(commandLine, ConsumerCommandOptions.MQ_USER);
     addCommandLineValue(commandLine, ConsumerCommandOptions.MQ_PASSWORD);

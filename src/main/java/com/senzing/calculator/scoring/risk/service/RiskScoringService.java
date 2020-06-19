@@ -450,8 +450,7 @@ public class RiskScoringService implements ListenerService {
         JsonObject record = records.getJsonObject(i);
         String dataSource = record.getString(DATA_SOURCE_TAG, null).strip().toUpperCase();
         if (trustedSources.contains(dataSource)) {
-          riskScorer.setTrustedSource(true);
-          break;
+          riskScorer.addTrustedSource(dataSource);
         }
       }
     }
