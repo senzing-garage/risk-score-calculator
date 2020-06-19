@@ -31,7 +31,7 @@ public class RiskScorerTest {
     riskScorer.setOneAndOnlyOneDOB(true);
     riskScorer.setOneOrLessSSN(true);
     riskScorer.setOneOrMoreAddress(true);
-    riskScorer.setSourceIMDM(true);
+    riskScorer.setTrustedSource(true);
     riskScorer.setNoPossibleMatch(true);
     riskScorer.setScoreOverride("Yellow");
     riskScorer.addMultipleExclusives("SSN", new ArrayList<String>(Arrays.asList("123-45-6789", "987-65-4321")));
@@ -43,7 +43,7 @@ public class RiskScorerTest {
     assertThat(riskScorer.hasOneAndOnlyOneDOB(), is(equalTo(true)));
     assertThat(riskScorer.hasOneOrMoreAddress(), is(equalTo(true)));
     assertThat(riskScorer.hasOneOrLessSSN(), is(equalTo(true)));
-    assertThat(riskScorer.hasSourceIMDM(), is(equalTo(true)));
+    assertThat(riskScorer.hasTrustedSource(), is(equalTo(true)));
     assertThat(riskScorer.hasNoPossibleMatch(), is(equalTo(true)));
     assertThat(riskScorer.getScoreOverride(), is(equalTo(RiskScore.Yellow)));
     assertThat(riskScorer.getMultipleExclusives().size(), is(equalTo(1)));
@@ -55,7 +55,7 @@ public class RiskScorerTest {
     riskScorer.setOneAndOnlyOneDOB(false);
     riskScorer.setOneOrLessSSN(false);
     riskScorer.setOneOrMoreAddress(false);
-    riskScorer.setSourceIMDM(false);
+    riskScorer.setTrustedSource(false);
     riskScorer.setNoPossibleMatch(false);
     riskScorer.setScoreOverride("Red");
 
@@ -64,7 +64,7 @@ public class RiskScorerTest {
     assertThat(riskScorer.hasOneAndOnlyOneDOB(), is(equalTo(false)));
     assertThat(riskScorer.hasOneOrMoreAddress(), is(equalTo(false)));
     assertThat(riskScorer.hasOneOrLessSSN(), is(equalTo(false)));
-    assertThat(riskScorer.hasSourceIMDM(), is(equalTo(false)));
+    assertThat(riskScorer.hasTrustedSource(), is(equalTo(false)));
     assertThat(riskScorer.hasNoPossibleMatch(), is(equalTo(false)));
     assertThat(riskScorer.getScoreOverride(), is(equalTo(RiskScore.Red)));
   }
@@ -100,12 +100,12 @@ public class RiskScorerTest {
     riskScorer.setOneAndOnlyOneDOB(true);
     riskScorer.setOneOrLessSSN(true);
     riskScorer.setOneOrMoreAddress(true);
-    riskScorer.setSourceIMDM(true);
+    riskScorer.setTrustedSource(true);
     riskScorer.setNoPossibleMatch(true);
 
     assertThat(riskScorer.getDataQualityScore(), is(equalTo(RiskScore.Green)));
     assertThat(riskScorer.getCollisionScore(), is(equalTo(RiskScore.Green)));
-    assertThat(riskScorer.getReason(), is(containsString("At least 1 iMDM record")));
+    assertThat(riskScorer.getReason(), is(containsString("At least 1 trusted source record")));
     assertThat(riskScorer.getReason(), is(containsString("One and only one DOB")));
     assertThat(riskScorer.getReason(), is(containsString("One or less SSN")));
     assertThat(riskScorer.getReason(), is(containsString("One or more addresses")));
@@ -122,7 +122,7 @@ public class RiskScorerTest {
     riskScorer.setOneAndOnlyOneDOB(false);
     riskScorer.setOneOrLessSSN(false);
     riskScorer.setOneOrMoreAddress(true);
-    riskScorer.setSourceIMDM(false);
+    riskScorer.setTrustedSource(false);
     riskScorer.setNoPossibleMatch(false);
     riskScorer.addMultipleExclusives("SSN", new ArrayList<String>(Arrays.asList("123-45-6789", "987-65-4321")));
     riskScorer.addSharedExclusives(getSharedFeatures());
@@ -145,13 +145,13 @@ public class RiskScorerTest {
     riskScorer.setOneAndOnlyOneDOB(false);
     riskScorer.setOneOrLessSSN(false);
     riskScorer.setOneOrMoreAddress(true);
-    riskScorer.setSourceIMDM(false);
+    riskScorer.setTrustedSource(false);
     riskScorer.setNoPossibleMatch(true);
     riskScorer.addSharedF1s(getSharedFeatures());
 
     assertThat(riskScorer.getDataQualityScore(), is(equalTo(RiskScore.Yellow)));
     assertThat(riskScorer.getCollisionScore(), is(equalTo(RiskScore.Yellow)));
-    assertThat(riskScorer.getReason(), is(containsString("No iMDM record")));
+    assertThat(riskScorer.getReason(), is(containsString("No record from trusted source")));
     assertThat(riskScorer.getReason(), is(containsString("Not one and only one DOB")));
     assertThat(riskScorer.getReason(), is(containsString("More than one SSN")));
     assertThat(riskScorer.getReason(), is(containsString("Shares F1 types with other entities - [(CustID:some data), (MemberID:some other data)]")));

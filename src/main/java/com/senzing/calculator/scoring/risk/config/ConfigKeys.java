@@ -8,4 +8,5 @@ public class ConfigKeys {
   public static final String RABBITMQ_PASSWORD = "riskscorer.rabbitmq.password";
   public static final String JDBC_CONNECTION = "riskscorer.jdbc.connection";
   public static final String CONSUMER_TYPE = "riskscorer.consumer.type";
+  public static final String TRUSTED_SOURCES = "riskscorer.scoring.sources.trusted";
 }

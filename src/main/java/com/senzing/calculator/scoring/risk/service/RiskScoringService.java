@@ -84,17 +84,20 @@ public class RiskScoringService implements ListenerService {
   private static final String SCORING_CAP_REACHED_TAG = "SCORING_CAP_REACHED";
   // Values.
   private static final String POSSIBLY_SAME_VALUE = "POSSIBLY_SAME";
-  private static final String IMDM_VALUE = "IMDM";
   private static final String YES_VALUE = "YES";
   private static final String Y_VALUE = "Y";
+  // Other strings
+  private static final String COMMA = ",";
 
   private static final int defaultLensID = 1;
 
   G2ServiceExt g2Service;
+  DatabaseService dbService;
+
   List<String> f1Exclusive;
   List<String> f1Features;
   List<FeatureTypeOverride> f1OverRideFType;
-  DatabaseService dbService;
+  List<String> trustedSources;
 
   boolean serviceUp;
 
@@ -106,11 +109,13 @@ public class RiskScoringService implements ListenerService {
     // Get configuration
     String g2IniFile = null;
     String connectionString = null;
+    String trustedSourcesString = null;
     try { 
       JsonReader reader = Json.createReader(new StringReader(config));
       JsonObject configObject = reader.readObject();
       g2IniFile = configObject.getString(CommandOptions.INI_FILE, "");
       connectionString = configObject.getString(CommandOptions.JDBC_CONNECTION, "");
+      trustedSourcesString = configObject.getString(CommandOptions.TRUSTED_SOURCES, "");
     } catch (RuntimeException e) {
       throw new ServiceSetupException(e);
     }
@@ -121,6 +126,8 @@ public class RiskScoringService implements ListenerService {
     if (connectionString == null || connectionString.isEmpty()) {
       throw new ServiceSetupException(CommandOptions.JDBC_CONNECTION + " missing from configuration");
     }
+
+    trustedSources = parseAndFormatCommaSeparatedString(trustedSourcesString);
 
     g2Service = new G2ServiceExt();
     g2Service.init(g2IniFile);
@@ -294,8 +301,8 @@ public class RiskScoringService implements ListenerService {
       // Check if the related entities section reveals any ambiguous relationships or possible matches (count as red if found).
       checkRelationships(rootObject, riskScorer);
 
-      // Do we have iMDM data source in this entity (counts as green if found).
-      checkIMDMDatasource(resolvedEntity, riskScorer);
+      // Do we have a trusted data source in this entity (counts as green if found).
+      checkTrustedDatasource(resolvedEntity, riskScorer);
 
       //=========================================
       // Reporting
@@ -433,17 +440,17 @@ public class RiskScoringService implements ListenerService {
   }
 
   /*
-   * Checks if any of the data sources are iMDM.
+   * Checks if any of the data sources are in the trusted sources list.
    * The risk scorer is updated with the results found.
    */
-  private void checkIMDMDatasource(JsonObject resolvedEntity, RiskScorer riskScorer) {
+  private void checkTrustedDatasource(JsonObject resolvedEntity, RiskScorer riskScorer) {
     JsonArray records = optJsonArray(resolvedEntity, RECORDS_SECTION);
     if (records != null) {
       for (int i = 0; i < records.size(); i++) {
         JsonObject record = records.getJsonObject(i);
-        String dataSource = record.getString(DATA_SOURCE_TAG, null);
-        if (IMDM_VALUE.equalsIgnoreCase(dataSource)) {
-          riskScorer.setSourceIMDM(true);
+        String dataSource = record.getString(DATA_SOURCE_TAG, null).strip().toUpperCase();
+        if (trustedSources.contains(dataSource)) {
+          riskScorer.setTrustedSource(true);
           break;
         }
       }
@@ -616,6 +623,15 @@ public class RiskScoringService implements ListenerService {
     } catch (Exception e) {
     }
     return retVal;
+  }
+
+  private List<String> parseAndFormatCommaSeparatedString(String source) {
+    List<String> parsedList = new ArrayList<>();
+    String parsedString[] = source.split(COMMA);
+    for (int i = 0; i < parsedString.length; i++) {
+      parsedList.add(parsedString[i].strip().toUpperCase());
+    }
+    return parsedList;
   }
 
   public boolean isServiceUp() {

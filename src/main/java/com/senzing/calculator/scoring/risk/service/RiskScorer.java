@@ -18,7 +18,7 @@ import javax.json.JsonObjectBuilder;
  * 
  * Red Data Quality (entity has any of the following):
  *                Is Ambiguous or has Ambiguous relationship
- *                Those having multiple F1E or F1ES of the same type – requires RXSSN change
+ *                Those having multiple F1E or F1ES of the same type
  *                Those with a F1E or F1ES that is shared with other entities 
  *                Same entity with multiple DOBs
  *
@@ -28,13 +28,13 @@ import javax.json.JsonObjectBuilder;
  *                Entity has no possible matches
  * 
  * Green Data Quality (entity has all of the following):
- *                Entity has at least 1 IMDM records
+ *                Entity has at least 1 trusted source record
  *                Entity has one and only one SSN
  *                Entity has one and only one DOB
  * 
  * Modification 06/03/2020
  * Green Data Quality (entity has all of the following):
- *                Entity has at least 1 IMDM records
+ *                Entity has at least 1 trusted source record
  *                Entity has none or one SSN
  *                Entity has one and only one DOB
  *                Entity has address
@@ -51,7 +51,7 @@ public class RiskScorer {
   // Green quality.
   private boolean oneAndOnlyOneDOB;
   private boolean oneOrLessSSN;
-  private boolean sourceIMDM;
+  private boolean hasTrustedSource;
   private boolean oneOrMoreAddress;
 
   // Override for data quality scores
@@ -68,7 +68,7 @@ public class RiskScorer {
   private static final String MANUAL_RED = "Manually flagged red";
 
   // Green quality reasons.
-  private static final String IMDM_EXISTS = "At least 1 iMDM record";
+  private static final String TRUSTED_SOURCE_EXISTS = "At least 1 trusted source record";
   private static final String ONE_SSN = "One or less SSN";
   private static final String ONE_DOB = "One and only one DOB";
   private static final String ONE_OR_MORE_ADDRESS = "One or more addresses";
@@ -79,7 +79,7 @@ public class RiskScorer {
   private static final String NO_POSIBLE_MATCH = "No possible match";
 
   // Yellow quality reasons.
-  private static final String NO_IMDM = "No iMDM record";
+  private static final String NO_TRUSTED_SOURCE = "No record from trusted source";
   private static final String NOT_ONE_SSN = "More than one SSN";
   private static final String NOT_ONE_DOB = "Not one and only one DOB";
   private static final String NO_ADDRESS = "No address";
@@ -100,7 +100,7 @@ public class RiskScorer {
     sharedF1s = new ArrayList<>();
     oneAndOnlyOneDOB = false;
     oneOrLessSSN = false;
-    sourceIMDM = false;
+    hasTrustedSource = false;
     oneOrMoreAddress = false;
     sharedExclusives = new ArrayList<>();
   }
@@ -145,12 +145,12 @@ public class RiskScorer {
     this.oneOrLessSSN = oneOrLessSSN;
   }
 
-  public boolean hasSourceIMDM() {
-    return sourceIMDM;
+  public boolean hasTrustedSource() {
+    return hasTrustedSource;
   }
 
-  public void setSourceIMDM(boolean hasIMDMdsrc) {
-    this.sourceIMDM = hasIMDMdsrc;
+  public void setTrustedSource(boolean hasTrustedSource) {
+    this.hasTrustedSource = hasTrustedSource;
   }
 
   public boolean hasNoPossibleMatch() {
@@ -215,7 +215,7 @@ public class RiskScorer {
    */
   public RiskScore getDataQualityScore() {
     boolean isRed = ambiguous || !multipleExclusives.isEmpty() || !sharedExclusives.isEmpty() || mutltipleDOBs;
-    boolean isGreen = sourceIMDM && oneAndOnlyOneDOB && oneOrLessSSN && oneOrMoreAddress;
+    boolean isGreen = hasTrustedSource && oneAndOnlyOneDOB && oneOrLessSSN && oneOrMoreAddress;
     
     if (isRed) {
       return RiskScore.Red;
@@ -282,8 +282,8 @@ public class RiskScorer {
       }
       collisionReasons.add(RED_DATA_QUALITY);
     } else if (qualityScore == RiskScore.Green) {
-      if (sourceIMDM) {
-        qualityReasons.add(IMDM_EXISTS);
+      if (hasTrustedSource) {
+        qualityReasons.add(TRUSTED_SOURCE_EXISTS);
       }
       if (oneAndOnlyOneDOB) {
         qualityReasons.add(ONE_DOB);
@@ -295,8 +295,8 @@ public class RiskScorer {
         qualityReasons.add(ONE_OR_MORE_ADDRESS);
       }
     } else {
-      if (!sourceIMDM) {
-        qualityReasons.add(NO_IMDM);
+      if (!hasTrustedSource) {
+        qualityReasons.add(NO_TRUSTED_SOURCE);
       }
       if (!oneAndOnlyOneDOB) {
         qualityReasons.add(NOT_ONE_DOB);

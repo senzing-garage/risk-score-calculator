@@ -50,6 +50,7 @@ public class RiskScoringCalculatorApp {
       configValues.put(ConsumerCommandOptions.CONSUMER_TYPE, RABBITMQ_CONSUMER_TYPE);
       configValues.put(CommandOptions.INI_FILE, config.getConfigValue(ConfigKeys.G2_INI_FILE));
       configValues.put(CommandOptions.JDBC_CONNECTION, config.getConfigValue(ConfigKeys.JDBC_CONNECTION));
+      configValues.put(CommandOptions.TRUSTED_SOURCES, config.getConfigValue(ConfigKeys.TRUSTED_SOURCES));
       configValues.put(ConsumerCommandOptions.MQ_HOST, config.getConfigValue(ConfigKeys.RABBITMQ_HOST));
       configValues.put(ConsumerCommandOptions.MQ_QUEUE, config.getConfigValue(ConfigKeys.RABBITMQ_NAME));
       configValues.put(ConsumerCommandOptions.MQ_USER, config.getConfigValue(ConfigKeys.RABBITMQ_USER_NAME));
@@ -133,5 +134,6 @@ public class RiskScoringCalculatorApp {
     System.out.println("                                                          -mqHost <host name for queue server> \\");
     System.out.println("                                                          [-mqUser <queue server user name>] \\");
     System.out.println("                                                          [-mqPassword <queue server password>]");
-     }
+    System.out.println("                                                          [-trustedSources <comma separated list of trusted sources used for scoring>]");
+  }
 }

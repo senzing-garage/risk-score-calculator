@@ -13,8 +13,8 @@ These are the rules used for scoring:
 
 1. Red Data Quality (entity has any of the following):
     1. Is Ambiguous or has Ambiguous relationship
-    1. Those having multiple F1E or F1ES of the same type – requires RXSSN change
-    1. Those with a F1E or F1ES that is shared with other entities 
+    1. Those having multiple F1E or F1ES of the same type
+    1. Those with a F1E or F1ES that is shared with other entities
     1. Same entity with multiple DOBs
 
 1. Green Collision (entity has all of the following):
@@ -23,9 +23,10 @@ These are the rules used for scoring:
     1. Entity has no possible matches
 
 1. Green Data Quality (entity has all of the following):
-    1. Entity has at least 1 IMDM records
-    1. Entity has one and only one SSN
+    1. Entity has at least 1 trusted data source record (configurable which source)
+    1. Entity has none or one SSN
     1. Entity has one and only one DOB
+    1. Entity has address
 
 It receives data via RabbitMQ, which in turn can be fed by a streaming service.
 
