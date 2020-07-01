@@ -26,12 +26,12 @@ public class DatabaseService {
   private static final String RES_ENT_ID_FIELD = "RES_ENT_ID";
 
   private final static String DELETE_QUERY = "DELETE FROM RES_RISK_SCORE WHERE RES_ENT_ID = ? AND LENS_ID = ?";
-  private final static String UPSERT_QUERY = "INSERT INTO RES_RISK_SCORE (RES_ENT_ID, LENS_ID, QUALITY_STATE, COLLISION_STATE, REASON) "
-                                                     + "VALUES (?, ?, ?, ?, ?) "
-                                                     + "ON CONFLICT (RES_ENT_ID, LENS_ID) DO UPDATE SET QUALITY_STATE = ?, COLLISION_STATE = ?, REASON = ?";
-  private final static String UPSERT_QUERY_MYSQL = "INSERT INTO RES_RISK_SCORE(RES_ENT_ID, LENS_ID, QUALITY_STATE, COLLISION_STATE, REASON) "
-                                                     + "VALUES (?, ?, ?, ?, ?) "
-                                                     + "ON DUPLICATE KEY UPDATE QUALITY_STATE = ?, COLLISION_STATE = ?, REASON = ?";
+  private final static String UPSERT_QUERY = "INSERT INTO RES_RISK_SCORE (RES_ENT_ID, LENS_ID, QUALITY_STATE, COLLISION_STATE, QUERY_STATE, REASON, QUERY_REASON) "
+                                                     + "VALUES (?, ?, ?, ?, ?, ?, ?) "
+                                                     + "ON CONFLICT (RES_ENT_ID, LENS_ID) DO UPDATE SET QUALITY_STATE = ?, COLLISION_STATE = ?, QUERY_STATE = ?, REASON = ?, QUERY_REASON = ?";
+  private final static String UPSERT_QUERY_MYSQL = "INSERT INTO RES_RISK_SCORE (RES_ENT_ID, LENS_ID, QUALITY_STATE, COLLISION_STATE, QUERY_STATE, REASON, QUERY_REASON) "
+                                                     + "VALUES (?, ?, ?, ?, ?, ?, ?) "
+                                                     + "ON DUPLICATE KEY UPDATE QUALITY_STATE = ?, COLLISION_STATE = ?, QUERY_STATE = ?, REASON = ?, QUERY_REASON = ?";
   private final static String GET_ENTITIES_BY_FEATURES_QUERY = "SELECT LIB_FEAT_ID,UTYPE_CODE,RES_ENT_ID FROM RES_FEAT_EKEY "
                                                                + "WHERE LENS_ID=? AND RES_ENT_ID!=? AND LIB_FEAT_ID IN ";
 
@@ -62,7 +62,8 @@ public class DatabaseService {
    * 
    * @throws ServiceExecutionException
    */
-  public void postRiskScore(long entityID, int lensID, String qualityScore, String collisionScore, String reason)
+  public void postRiskScore(long entityID, int lensID, String qualityScore, String collisionScore, String queryScore,
+      String reason, String queryReason)
       throws ServiceExecutionException {
 
     try {
@@ -72,7 +73,7 @@ public class DatabaseService {
         deleteStatement.setInt(index++, lensID);
         deleteStatement.execute();
       } else {
-        populateUpsertStatement(postStatement, entityID, lensID, qualityScore, collisionScore, reason);
+        populateUpsertStatement(postStatement, entityID, lensID, qualityScore, collisionScore, queryScore, reason, queryReason);
         postStatement.execute();
       }
     } catch (SQLException e) {
@@ -189,16 +190,20 @@ public class DatabaseService {
   }
 
   private PreparedStatement populateUpsertStatement(PreparedStatement statement, long entityID, int lensID, String qualityScore, String collisionScore,
-      String reason) throws SQLException {
+      String queryScore, String reason, String queryReason) throws SQLException {
     int index = 1;
     statement.setLong(index++, entityID);
     statement.setInt(index++, lensID);
     statement.setString(index++, qualityScore);
     statement.setString(index++, collisionScore);
+    statement.setString(index++, queryScore);
     statement.setString(index++, reason);
+    statement.setString(index++, queryReason);
     statement.setString(index++, qualityScore);
     statement.setString(index++, collisionScore);
+    statement.setString(index++, queryScore);
     statement.setString(index++, reason);
+    statement.setString(index++, queryReason);
     return statement;
   }
 }

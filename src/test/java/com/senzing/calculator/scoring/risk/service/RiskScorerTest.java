@@ -36,6 +36,7 @@ public class RiskScorerTest {
     riskScorer.addMultipleExclusives("SSN", new ArrayList<String>(Arrays.asList("123-45-6789", "987-65-4321")));
     riskScorer.addSharedExclusives(getSharedFeatures());
     riskScorer.addSharedF1s(getSharedFeatures());
+    riskScorer.addQueryRisk("+ADDRESS+NAME", "Y");
 
     assertThat(riskScorer.isAmbiguous(), is(equalTo(true)));
     assertThat(riskScorer.hasMutltipleDOBs(), is(equalTo(true)));
@@ -48,6 +49,8 @@ public class RiskScorerTest {
     assertThat(riskScorer.getMultipleExclusives().size(), is(equalTo(1)));
     assertThat(riskScorer.getSharedExclusives().size(), is(equalTo(2)));
     assertThat(riskScorer.getSharedF1().size(), is(equalTo(2)));
+    assertThat(riskScorer.getQueryRiskScore(), is(equalTo(RiskScore.Yellow)));
+    assertThat(riskScorer.getQueryRiskReason(), is(equalTo("[+ADDRESS+NAME]")));
 
     riskScorer.setAmbiguous(false);
     riskScorer.setMutltipleDOBs(false);
@@ -57,6 +60,7 @@ public class RiskScorerTest {
     riskScorer.setNoPossibleMatch(false);
     riskScorer.addTrustedSource("GoodSource");
     riskScorer.setScoreOverride("Red");
+    riskScorer.addQueryRisk("+NAME+SSN", "R");
 
     assertThat(riskScorer.isAmbiguous(), is(equalTo(false)));
     assertThat(riskScorer.hasMutltipleDOBs(), is(equalTo(false)));
@@ -66,6 +70,8 @@ public class RiskScorerTest {
     assertThat(riskScorer.getTrustedSources().size(), is(equalTo(1)));
     assertThat(riskScorer.hasNoPossibleMatch(), is(equalTo(false)));
     assertThat(riskScorer.getScoreOverride(), is(equalTo(RiskScore.Red)));
+    assertThat(riskScorer.getQueryRiskScore(), is(equalTo(RiskScore.Red)));
+    assertThat(riskScorer.getQueryRiskReason(), is(equalTo("[+NAME+SSN]")));
   }
 
   @Test
