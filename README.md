@@ -30,6 +30,11 @@ These are the rules used for scoring:
 
 It receives data via RabbitMQ, which in turn can be fed by a streaming service.
 
+Update July 1, 2020:
+I added query risk scoring. It uses criteria for match keys to give the score.
+The score is configured with a string of format "+NAME+DOB:R;+NAME+ADDRESS:Y;+NAME+PHONE:Y;+NAME+SSN:R".
+The relationships are scored according to this config, e.g. +NAME+DOB on a relationship would give Red score.
+
 ## Setup and building
 
 ### Dependencies

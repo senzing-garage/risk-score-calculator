@@ -2,6 +2,7 @@ package com.senzing.calculator.scoring.risk.service;
 
 import java.io.StringReader;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -75,9 +76,11 @@ public class RiskScoringService implements ListenerService {
   private static final String UTYPE_CODE_TAG = "UTYPE_CODE";
   private static final String FEAT_DESC_TAG = "FEAT_DESC";
   private static final String FEAT_DESC_VALUES_TAG = "FEAT_DESC_VALUES";
-  // Miscellaneous tags
+  // Relationship sub tags
   private static final String IS_AMBIGUOUS_TAG = "IS_AMBIGUOUS";
   private static final String MATCH_LEVEL_CODE_TAG = "MATCH_LEVEL_CODE";
+  private static final String MATCH_KEY_TAG = "MATCH_KEY";
+  // Miscellaneous tags
   private static final String DATA_SOURCE_TAG = "DATA_SOURCE";
   private static final String LIB_FEAT_ID_TAG = "LIB_FEAT_ID";
   private static final String CANDIDATE_CAP_REACHED_TAG = "CANDIDATE_CAP_REACHED";
@@ -98,6 +101,7 @@ public class RiskScoringService implements ListenerService {
   List<String> f1Features;
   List<FeatureTypeOverride> f1OverRideFType;
   List<String> trustedSources;
+  List<QueryRiskData> queryRiskCriteria;
 
   boolean serviceUp;
 
@@ -111,12 +115,14 @@ public class RiskScoringService implements ListenerService {
     String g2IniFile = null;
     String connectionString = null;
     String trustedSourcesString = null;
-    try { 
+    String queryRiskString = null;
+    try {
       JsonReader reader = Json.createReader(new StringReader(config));
       JsonObject configObject = reader.readObject();
       g2IniFile = configObject.getString(CommandOptions.INI_FILE, "");
       connectionString = configObject.getString(CommandOptions.JDBC_CONNECTION, "");
       trustedSourcesString = configObject.getString(CommandOptions.TRUSTED_SOURCES, "");
+      queryRiskString = configObject.getString(CommandOptions.QUERY_RISK_CRITERIA, "");
     } catch (RuntimeException e) {
       throw new ServiceSetupException(e);
     }
@@ -127,8 +133,15 @@ public class RiskScoringService implements ListenerService {
     if (connectionString == null || connectionString.isEmpty()) {
       throw new ServiceSetupException(CommandOptions.JDBC_CONNECTION + " missing from configuration");
     }
+    if (trustedSourcesString == null || trustedSourcesString.isEmpty()) {
+      System.err.println("WARNING: trusted sources is not configured!");
+    }
+    if (queryRiskString == null || queryRiskString.isEmpty()) {
+      System.err.println("WARNING: query risk criteria is not configured!");
+    }
 
     trustedSources = parseAndFormatCommaSeparatedString(trustedSourcesString);
+    queryRiskCriteria = parseAndProcessQueryRiskCriteria(queryRiskString);
 
     g2Service = new G2ServiceExt();
     g2Service.init(g2IniFile);
@@ -213,7 +226,7 @@ public class RiskScoringService implements ListenerService {
       }
     }
     if (entityData == null || entityData.isEmpty()) {
-      dbService.postRiskScore(entityID, defaultLensID, null, null, null);
+      dbService.postRiskScore(entityID, defaultLensID, null, null, null, null, null);
       return;
     }
 
@@ -303,6 +316,11 @@ public class RiskScoringService implements ListenerService {
 
       // Do we have a trusted data source in this entity (counts as green if found).
       checkTrustedDatasource(resolvedEntity, riskScorer);
+
+      //=========================================
+      // Match quality check
+      //=========================================
+      checkQueryRisk(rootObject, riskScorer);
 
       //=========================================
       // Reporting
@@ -458,6 +476,46 @@ public class RiskScoringService implements ListenerService {
 
 
   //===================================================================
+  // Methods for match quality
+  //===================================================================
+
+  /*
+   * Checks the relationships for the quality of the matches.
+   * The risk scorer is updated with the results found.
+   */
+  private void checkQueryRisk(JsonObject entityRoot, RiskScorer riskScorer) throws ServiceExecutionException {
+    JsonArray relatedEntities = optJsonArray(entityRoot, RELATED_ENTITIES_SECTION);
+    if (relatedEntities != null) {
+      for (int i = 0; i < relatedEntities.size(); i++) {
+        JsonObject entity = relatedEntities.getJsonObject(i);
+
+        // Analyze the match key
+        String matchKey = entity.getString(MATCH_KEY_TAG);
+        List<String> parsedMatchKey = null;
+        try {
+          parsedMatchKey = parseMatchKey(matchKey);
+        } catch (ParseException e) {
+          throw new ServiceExecutionException("Badly formed match key: " + matchKey);
+        }
+        if (parsedMatchKey.size() > 0) {
+          for (QueryRiskData queryRiskData : queryRiskCriteria) {
+            boolean criteriaMatch = true;
+            for (String matchKeyItem : queryRiskData.getCriteriaList()) {
+              if (!parsedMatchKey.contains(matchKeyItem)) {
+                criteriaMatch = false;
+                break;
+              }
+            }
+            if (criteriaMatch) {
+              riskScorer.addQueryRisk(queryRiskData.getCriteriaString(), queryRiskData.getScore());
+            }
+          }
+        }
+      }
+    }
+  }
+
+  //===================================================================
   // Other assisting methods
   //===================================================================
 
@@ -583,7 +641,9 @@ public class RiskScoringService implements ListenerService {
 
   private void reportScoring(long entityID, int lensID, RiskScorer riskScorer) throws ServiceExecutionException {
     try {
-      dbService.postRiskScore(entityID, lensID, riskScorer.getDataQualityScore().toString(), riskScorer.getCollisionScore().toString(), riskScorer.getReason());
+      dbService.postRiskScore(entityID, lensID, riskScorer.getDataQualityScore().toString(),
+          riskScorer.getCollisionScore().toString(), riskScorer.getQueryRiskScore().toString(), riskScorer.getReason(),
+          riskScorer.getQueryRiskReason());
     } catch (RuntimeException e) {
       throw new ServiceExecutionException(e);
     }
@@ -631,11 +691,67 @@ public class RiskScoringService implements ListenerService {
 
   private List<String> parseAndFormatCommaSeparatedString(String source) {
     List<String> parsedList = new ArrayList<>();
-    String parsedString[] = source.split(COMMA);
-    for (int i = 0; i < parsedString.length; i++) {
-      parsedList.add(parsedString[i].strip().toUpperCase());
+    if (source != null) {
+      String parsedString[] = source.split(COMMA);
+      for (int i = 0; i < parsedString.length; i++) {
+        parsedList.add(parsedString[i].strip().toUpperCase());
+      }
     }
     return parsedList;
+  }
+
+  /*
+   * Parses query risk criteria string and populates a list of pojo objects containing the parsed information.
+   */
+  private List<QueryRiskData> parseAndProcessQueryRiskCriteria(String queryRiskCriteriaString) throws ServiceSetupException {
+    List<QueryRiskData> retVal = new ArrayList<>();
+    if (queryRiskCriteriaString != null && !queryRiskCriteriaString.isEmpty()) {
+      // expecting string of format: +NAME+DOB:R;+NAME+ADDRESS:Y;+NAME+PHONE:Y;+NAME+SSN:R
+      String criteria[] = queryRiskCriteriaString.split(";");
+      for (int i = 0; i < criteria.length; i++) {
+        String matchKeyCriterion[] = criteria[i].split(":");
+        if (matchKeyCriterion.length != 2) {
+          throw new ServiceSetupException("Badly formed query risk criteria: " + queryRiskCriteriaString);
+        }
+        String score = matchKeyCriterion[1].toUpperCase();
+        // The score takes values R (for red) or Y (for yellow).
+        if (!(score.equals(RiskScorer.R_VALUE) || score.equals(RiskScorer.Y_VALUE))) {
+          throw new ServiceSetupException("Badly formed query risk criteria: " + queryRiskCriteriaString);
+        }
+        QueryRiskData queryRiskData = new QueryRiskData();
+        queryRiskData.setScore(score);
+        queryRiskData.setCriteriaString(matchKeyCriterion[0]);
+        try {
+          queryRiskData.setCriteriaList(parseMatchKey(matchKeyCriterion[0]));
+        } catch (ParseException e) {
+          throw new ServiceSetupException("Badly formed query risk criteria: " + queryRiskCriteriaString);
+        }
+        retVal.add(queryRiskData);
+      }
+    }
+    return retVal;
+  }
+
+  /*
+   * Parses match key of format +NAME+PHONE_NUMBER+ADDRESS-DOB.
+   */
+  private static List<String> parseMatchKey(String matchKey) throws ParseException {
+    List<String> result = new ArrayList<>();
+
+    int tokenBegin = matchKey.length();
+    while (tokenBegin > 0) {
+      int tokenEnd = tokenBegin;
+      int lastPlus = matchKey.lastIndexOf('+', tokenEnd - 1);
+      int lastMinus = matchKey.lastIndexOf('-', tokenEnd - 1);
+      // This is for special cases of keys like this: +NAME+ADDRESS (Ambiguous)
+      int lastParen = matchKey.lastIndexOf('(', tokenEnd - 1);
+      tokenBegin = Math.max(lastParen, Math.max(lastPlus, lastMinus));
+      if (tokenBegin < 0) {
+        throw new ParseException("Badly formed match key: " + matchKey, tokenBegin);
+      }
+      result.add( matchKey.substring(tokenBegin, tokenEnd).trim());
+    }
+    return result;
   }
 
   public boolean isServiceUp() {

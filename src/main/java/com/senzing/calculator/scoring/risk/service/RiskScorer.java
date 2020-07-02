@@ -54,8 +54,16 @@ public class RiskScorer {
   private List<String> trustedSources;
   private boolean oneOrMoreAddress;
 
-  // Override for data quality scores
+  // Override for data quality scores.
   private RiskScore scoreOverride;
+
+  // Query quality.
+  private List<String> redQueryRisk;
+  private List<String> yellowQueryRisk;
+
+  // Short for Red and Yellow.
+  public static final String R_VALUE = "R";
+  public static final String Y_VALUE = "Y";
 
   // Red quality reasons.
   private static final String IS_AMBIGUOUS = "Ambiguous relationships";
@@ -90,7 +98,11 @@ public class RiskScorer {
   private static final String POSIBLE_MATCH = "Possible match exists";
   private static final String MANUAL_YELLOW = "Manually flagged yellow";
 
+  // Values
+  private static final String EMPTY_STRING = "";
+
   private static final int MAX_SUBSTRING_SIZE = 250;
+  private static final int MAX_QUERY_REASON_SIZE = 195;
 
   public RiskScorer() {
     ambiguous = false;
@@ -103,6 +115,8 @@ public class RiskScorer {
     oneOrMoreAddress = false;
     sharedExclusives = new ArrayList<>();
     trustedSources = new ArrayList<>();
+    redQueryRisk = new ArrayList<>();
+    yellowQueryRisk = new ArrayList<>();
   }
 
   public boolean isAmbiguous() {
@@ -208,6 +222,14 @@ public class RiskScorer {
     }
   }
 
+  public void addQueryRisk(String queryRisk, String score) {
+    if (R_VALUE.contentEquals(score)) {
+      redQueryRisk.add(queryRisk);
+    } else if (Y_VALUE.contentEquals(score)) {
+      yellowQueryRisk.add(queryRisk);
+    }
+  }
+
   /**
    * Returns what the data quality score is (Red, Yellow or Green)
    * 
@@ -243,6 +265,15 @@ public class RiskScorer {
     } else {
       return RiskScore.Yellow;
     }
+  }
+
+  public RiskScore getQueryRiskScore() {
+    if (!redQueryRisk.isEmpty()) {
+      return RiskScore.Red;
+    } else if (!yellowQueryRisk.isEmpty()) {
+      return RiskScore.Yellow;
+    } else
+      return RiskScore.Green;
   }
 
   /**
@@ -347,6 +378,27 @@ public class RiskScorer {
     rootObject.add("Collision", Json.createArrayBuilder(collisionReasons).build());
 
     return rootObject.build().toString();
+  }
+
+  public String getQueryRiskReason() {
+    // Limit the size of the strings so not to get overflow on sql inserts.
+    if (!redQueryRisk.isEmpty()) {
+      return getListAsLimitedString(redQueryRisk, MAX_QUERY_REASON_SIZE);
+    } else if (!yellowQueryRisk.isEmpty()) {
+      return getListAsLimitedString(yellowQueryRisk, MAX_QUERY_REASON_SIZE);
+    } else
+      return EMPTY_STRING;
+  }
+
+  private String getListAsLimitedString(List<String> source, int limit) {
+    List<String> limitedList = new ArrayList<>();
+    for (String key : source) {
+      if (limitedList.toString().length() + key.length() > limit) {
+        break;
+      }
+      limitedList.add(key);
+    }
+    return limitedList.toString();
   }
 
   private String getShortenedFeatureMap(Map<String, List<String>> featMap) {

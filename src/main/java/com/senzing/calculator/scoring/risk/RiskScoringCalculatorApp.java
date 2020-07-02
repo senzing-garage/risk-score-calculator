@@ -49,6 +49,7 @@ public class RiskScoringCalculatorApp {
       configValues.put(CommandOptions.INI_FILE, config.getConfigValue(ConfigKeys.G2_INI_FILE));
       configValues.put(CommandOptions.JDBC_CONNECTION, config.getConfigValue(ConfigKeys.JDBC_CONNECTION));
       configValues.put(CommandOptions.TRUSTED_SOURCES, config.getConfigValue(ConfigKeys.TRUSTED_SOURCES));
+      configValues.put(CommandOptions.QUERY_RISK_CRITERIA, config.getConfigValue(ConfigKeys.QUERY_RISK_CRITERIA));
       configValues.put(ConsumerCommandOptions.MQ_HOST, config.getConfigValue(ConfigKeys.RABBITMQ_HOST));
       configValues.put(ConsumerCommandOptions.MQ_QUEUE, config.getConfigValue(ConfigKeys.RABBITMQ_NAME));
       configValues.put(ConsumerCommandOptions.MQ_USER, config.getConfigValue(ConfigKeys.RABBITMQ_USER_NAME));
@@ -67,7 +68,9 @@ public class RiskScoringCalculatorApp {
     // Options for risk scoring servive.
     options.addOption(CommandOptions.INI_FILE, true, "Path to the G2 ini file");
     options.addOption(CommandOptions.JDBC_CONNECTION, true, "Connection string for the G2 database");
+    // Scoring options
     options.addOption(CommandOptions.TRUSTED_SOURCES, true, "List of trusted sources used for scoring");
+    options.addOption(CommandOptions.QUERY_RISK_CRITERIA, true, "List of query risk scoring criteria");
     // Options for consumer.
     options.addOption(ConsumerCommandOptions.MQ_HOST, true, "Host for RabbitMQ");
     options.addOption(ConsumerCommandOptions.MQ_USER, true, "User name for RabbitMQ");
@@ -81,6 +84,7 @@ public class RiskScoringCalculatorApp {
     addCommandLineValue(commandLine, CommandOptions.INI_FILE);
     addCommandLineValue(commandLine, CommandOptions.JDBC_CONNECTION);
     addCommandLineValue(commandLine, CommandOptions.TRUSTED_SOURCES);
+    addCommandLineValue(commandLine, CommandOptions.QUERY_RISK_CRITERIA);
     addCommandLineValue(commandLine, ConsumerCommandOptions.MQ_HOST);
     addCommandLineValue(commandLine, ConsumerCommandOptions.MQ_USER);
     addCommandLineValue(commandLine, ConsumerCommandOptions.MQ_PASSWORD);
@@ -135,5 +139,9 @@ public class RiskScoringCalculatorApp {
     System.out.println("                                                          [-mqUser <queue server user name>] \\");
     System.out.println("                                                          [-mqPassword <queue server password>]");
     System.out.println("                                                          [-trustedSources <comma separated list of trusted sources used for scoring>]");
+    System.out.println("                                                          [-queryRiskCriteria <list of query risk criteria. See below at *>]");
+    System.out.println("");
+    System.out.println("* Example of queryRiskCriteria: +NAME+DOB:R;+NAME+ADDRESS:Y;+NAME+PHONE:Y;+NAME+SSN:R");
+    System.out.println("");
   }
 }

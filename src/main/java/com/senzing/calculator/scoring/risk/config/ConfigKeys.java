@@ -9,4 +9,5 @@ public class ConfigKeys {
   public static final String JDBC_CONNECTION = "riskscorer.jdbc.connection";
   public static final String CONSUMER_TYPE = "riskscorer.consumer.type";
   public static final String TRUSTED_SOURCES = "riskscorer.scoring.sources.trusted";
+  public static final String QUERY_RISK_CRITERIA = "riskscorer.scoring.query.risk.criteria";
 }
