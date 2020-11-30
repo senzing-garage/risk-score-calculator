@@ -2,8 +2,10 @@ package com.senzing.calculator.scoring.risk.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -58,8 +60,8 @@ public class RiskScorer {
   private RiskScore scoreOverride;
 
   // Query quality.
-  private List<String> redQueryRisk;
-  private List<String> yellowQueryRisk;
+  private Set<String> redQueryRisk;
+  private Set<String> yellowQueryRisk;
 
   // Short for Red and Yellow.
   public static final String R_VALUE = "R";
@@ -115,8 +117,8 @@ public class RiskScorer {
     oneOrMoreAddress = false;
     sharedExclusives = new ArrayList<>();
     trustedSources = new ArrayList<>();
-    redQueryRisk = new ArrayList<>();
-    yellowQueryRisk = new ArrayList<>();
+    redQueryRisk = new HashSet<>();
+    yellowQueryRisk = new HashSet<>();
   }
 
   public boolean isAmbiguous() {
@@ -383,22 +385,28 @@ public class RiskScorer {
   public String getQueryRiskReason() {
     // Limit the size of the strings so not to get overflow on sql inserts.
     if (!redQueryRisk.isEmpty()) {
-      return getListAsLimitedString(redQueryRisk, MAX_QUERY_REASON_SIZE);
+      return getListAsLimitedQuotedStrings(redQueryRisk, MAX_QUERY_REASON_SIZE);
     } else if (!yellowQueryRisk.isEmpty()) {
-      return getListAsLimitedString(yellowQueryRisk, MAX_QUERY_REASON_SIZE);
-    } else
+      return getListAsLimitedQuotedStrings(yellowQueryRisk, MAX_QUERY_REASON_SIZE);
+    } else {
       return EMPTY_STRING;
+    }
   }
 
-  private String getListAsLimitedString(List<String> source, int limit) {
+  private String getListAsLimitedQuotedStrings(Set<String> source, int limit) {
     List<String> limitedList = new ArrayList<>();
     for (String key : source) {
-      if (limitedList.toString().length() + key.length() > limit) {
+      String quotedKey = quotedString(key);
+      if (limitedList.toString().length() + quotedKey.length() > limit) {
         break;
       }
-      limitedList.add(key);
+      limitedList.add(quotedKey);
     }
     return limitedList.toString();
+  }
+
+  private String quotedString(String source) {
+	return "\"" + source.trim() + "\"";
   }
 
   private String getShortenedFeatureMap(Map<String, List<String>> featMap) {
