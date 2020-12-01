@@ -50,7 +50,7 @@ public class RiskScorerTest {
     assertThat(riskScorer.getSharedExclusives().size(), is(equalTo(2)));
     assertThat(riskScorer.getSharedF1().size(), is(equalTo(2)));
     assertThat(riskScorer.getQueryRiskScore(), is(equalTo(RiskScore.Yellow)));
-    assertThat(riskScorer.getQueryRiskReason(), is(equalTo("[+ADDRESS+NAME]")));
+    assertThat(riskScorer.getQueryRiskReason(), is(equalTo("[\"+ADDRESS+NAME\"]")));
 
     riskScorer.setAmbiguous(false);
     riskScorer.setMutltipleDOBs(false);
@@ -71,7 +71,7 @@ public class RiskScorerTest {
     assertThat(riskScorer.hasNoPossibleMatch(), is(equalTo(false)));
     assertThat(riskScorer.getScoreOverride(), is(equalTo(RiskScore.Red)));
     assertThat(riskScorer.getQueryRiskScore(), is(equalTo(RiskScore.Red)));
-    assertThat(riskScorer.getQueryRiskReason(), is(equalTo("[+NAME+SSN]")));
+    assertThat(riskScorer.getQueryRiskReason(), is(equalTo("[\"+NAME+SSN\"]")));
   }
 
   @Test
