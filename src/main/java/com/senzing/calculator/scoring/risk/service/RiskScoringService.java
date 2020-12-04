@@ -215,7 +215,7 @@ public class RiskScoringService implements ListenerService {
     // Get the information about the entity from G2.
     String entityData = null;
     try {
-      entityData = g2Service.getEntity(entityID, false, true);
+      entityData = g2Service.getEntity(entityID, true, true);
     } catch (ServiceExecutionException e) {
       if (e.getMessage().contains("Unknown resolved entity value")) {
         missingEntityCount++;
@@ -229,7 +229,6 @@ public class RiskScoringService implements ListenerService {
       dbService.postRiskScore(entityID, defaultLensID, null, null, null, null, null);
       return;
     }
-
     // The F1, F1E, F1ES and their overrides are collected for later processing.
     Map<Long, FeatData> f1ExLibFeats = new HashMap<>();
     Map<Long, FeatData> f1OvrExLibFeats = new HashMap<>();
