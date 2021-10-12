@@ -21,8 +21,8 @@ GIT_VERSION_LONG := $(shell git describe --always --tags --long --dirty)
 
 # Docker.
 
-BASE_IMAGE ?= senzing/senzing-base:1.6.1
-BASE_BUILDER_IMAGE ?= senzing/base-image-debian:1.0.3
+BASE_IMAGE ?= senzing/senzing-base:1.6.2
+BASE_BUILDER_IMAGE ?= senzing/base-image-debian:1.0.4
 DOCKER_IMAGE_PACKAGE := $(GIT_REPOSITORY_NAME)-package:$(GIT_VERSION)
 DOCKER_IMAGE_TAG ?= $(GIT_REPOSITORY_NAME):$(GIT_VERSION)
 DOCKER_IMAGE_NAME := senzing/risk-scoring-calculator
@@ -99,7 +99,7 @@ docker-package: docker-rmi-for-package
 # -----------------------------------------------------------------------------
 
 .PHONY: docker-build
-docker-build: docker-rmi-for-build
+docker-build:
 
 	# This is to get the senzing-listener package to the docker build.
 	# It is a dependency and needs to be built before the risk scorer.
@@ -122,16 +122,6 @@ docker-build: docker-rmi-for-build
 	# Clean up the senzing-listener package, copied above.
 	rm -fr $(SENZING_LISTENER_DIRECTORY)
 
-.PHONY: docker-build-development-cache
-docker-build-development-cache: docker-rmi-for-build-development-cache
-	mkdir -p $(TARGET)
-	cp $(SENZING_G2_JAR_PATHNAME) $(TARGET)/
-	docker build \
-		--build-arg SENZING_G2_JAR_RELATIVE_PATHNAME=$(TARGET)/g2.jar \
-		--build-arg SENZING_G2_JAR_VERSION=$(SENZING_G2_JAR_VERSION) \
-		--tag $(DOCKER_IMAGE_TAG) \
-		.
-
 # -----------------------------------------------------------------------------
 # Clean up targets
 # -----------------------------------------------------------------------------
@@ -142,10 +132,6 @@ docker-rmi-for-build:
 		$(DOCKER_IMAGE_NAME):$(GIT_VERSION) \
 		$(DOCKER_IMAGE_NAME)
 
-.PHONY: docker-rmi-for-build-development-cache
-docker-rmi-for-build-development-cache:
-	-docker rmi --force $(DOCKER_IMAGE_TAG)
-
 .PHONY: docker-rmi-for-package
 docker-rmi-for-packagae:
 	-docker rmi --force $(DOCKER_IMAGE_PACKAGE)
@@ -155,13 +141,13 @@ rm-target:
 	-rm -rf $(TARGET)
 
 .PHONY: clean
-clean: docker-rmi-for-build docker-rmi-for-build-development-cache docker-rmi-for-package rm-target
-# -----------------------------------------------------------------------------
-#  # Help
-# -----------------------------------------------------------------------------
-#
-#  .PHONY: help
-#  help:
-#          @echo "List of make targets:"
-#                  @$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs
+clean: docker-rmi-for-build docker-rmi-for-package rm-target
 
+# -----------------------------------------------------------------------------
+# Help
+# -----------------------------------------------------------------------------
+
+.PHONY: help
+help:
+	@echo "List of make targets:"
+	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs
