@@ -24,6 +24,7 @@ ENV LD_LIBRARY_PATH=${SENZING_ROOT}/g2/lib:${SENZING_ROOT}/g2/lib/debian
 
 COPY senzing-listener /senzing-listener
 WORKDIR /senzing-listener
+RUN git checkout d4da71b7bb35a69fb2a358317b85c3b71ab8d9d0
 RUN make install
 
 # Build "risk-scoring-calculator.jar".
