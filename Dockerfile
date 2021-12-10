@@ -24,26 +24,17 @@ ENV LD_LIBRARY_PATH=${SENZING_ROOT}/g2/lib:${SENZING_ROOT}/g2/lib/debian
 
 COPY senzing-listener /senzing-listener
 WORKDIR /senzing-listener
-
-RUN export SENZING_LISTENER_VERSION=$(mvn "help:evaluate" -Dexpression=project.version -q -DforceStdout) \
- && make package \
- && cp /senzing-listener/target/senzing-listener-${SENZING_LISTENER_VERSION}.jar "/senzing-listener.jar" \
- && mvn install:install-file \
-      -Dfile=/senzing-listener.jar  \
-      -DgroupId=com.senzing \
-      -DartifactId=senzing-listener \
-      -Dversion=${SENZING_LISTENER_VERSION} \
-      -Dpackaging=jar
+RUN make install
 
 # Build "risk-scoring-calculator.jar".
 
 COPY . /risk-scoring-calculator
 WORKDIR /risk-scoring-calculator
 
-RUN export RISK_SCORING_CALCULATOR_VERSION=$(mvn "help:evaluate" -Dexpression=project.version -q -DforceStdout) \
- && make package \
- && cp /risk-scoring-calculator/target/risk-scoring-calculator-${RISK_SCORING_CALCULATOR_VERSION}.jar "/risk-scoring-calculator.jar" \
- && cp -r /risk-scoring-calculator/target/libs "/libs"
+RUN export RISK_SCORING_CALCULATOR_VERSION=$(mvn "help:evaluate" -Dexpression=project.version -q -DforceStdout)
+RUN make package
+RUN cp /risk-scoring-calculator/target/risk-scoring-calculator-${RISK_SCORING_CALCULATOR_VERSION}.jar "/risk-scoring-calculator.jar"
+RUN cp -r /risk-scoring-calculator/target/libs "/libs"
 
 # -----------------------------------------------------------------------------
 # Stage: Final
