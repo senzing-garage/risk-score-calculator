@@ -1,0 +1,3 @@
+[submodule "senzing-listener"]
+	path = senzing-listener
+	url = https://github.com/Senzing/senzing-listener.git

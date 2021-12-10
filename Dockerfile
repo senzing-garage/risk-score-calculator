@@ -7,18 +7,11 @@ ARG BASE_BUILDER_IMAGE=senzing/base-image-debian:1.0.6
 
 FROM ${BASE_BUILDER_IMAGE} as builder
 
-# Set Shell to use for RUN commands in builder step.
-
 ENV REFRESHED_AT=2021-12-07
 
 LABEL Name="senzing/risk-scoring-calculator-builder" \
       Maintainer="support@senzing.com" \
       Version="1.0.0"
-
-# Build arguments.
-
-ARG SENZING_G2_JAR_RELATIVE_PATHNAME=unknown
-ARG SENZING_G2_JAR_VERSION=unknown
 
 # Set environment variables.
 
@@ -27,27 +20,20 @@ ENV SENZING_G2_DIR=${SENZING_ROOT}/g2
 ENV PYTHONPATH=${SENZING_ROOT}/g2/python
 ENV LD_LIBRARY_PATH=${SENZING_ROOT}/g2/lib:${SENZING_ROOT}/g2/lib/debian
 
-# Copy Repo files to Builder step.
+# Build "senzing-listener.jar".
+
+COPY senzing-listener /senzing-listener
+WORKDIR /senzing-listener
+RUN mvn install
+
+# Build "risk-scoring-calculator.jar".
 
 COPY . /risk-scoring-calculator
-
-# Run the "make" command to install dependencies
-WORKDIR /risk-scoring-calculator/senzing-listener
-RUN make \
-     SENZING_G2_JAR_PATHNAME=/risk-scoring-calculator/${SENZING_G2_JAR_RELATIVE_PATHNAME} \
-     SENZING_G2_JAR_VERSION=${SENZING_G2_JAR_VERSION} \
-     install-dependency
-
-# Run the "make" command to create the artifacts.
-
 WORKDIR /risk-scoring-calculator
 
-RUN export RISK_SCORING_CALCULATOR_JAR_VERSION=$(mvn "help:evaluate" -Dexpression=project.version -q -DforceStdout) \
- && make \
-     SENZING_G2_JAR_PATHNAME=/risk-scoring-calculator/${SENZING_G2_JAR_RELATIVE_PATHNAME} \
-     SENZING_G2_JAR_VERSION=${SENZING_G2_JAR_VERSION} \
-     package \
- && cp /risk-scoring-calculator/target/risk-scoring-calculator-${RISK_SCORING_CALCULATOR_JAR_VERSION}.jar "/risk-scoring-calculator.jar" \
+RUN export RISK_SCORING_CALCULATOR_VERSION=$(mvn "help:evaluate" -Dexpression=project.version -q -DforceStdout) \
+ && make package \
+ && cp /risk-scoring-calculator/target/risk-scoring-calculator-${RISK_SCORING_CALCULATOR_VERSION}.jar "/risk-scoring-calculator.jar" \
  && cp -r /risk-scoring-calculator/target/libs "/libs"
 
 # -----------------------------------------------------------------------------
@@ -82,6 +68,10 @@ RUN wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | a
  && apt update \
  && apt install -y adoptopenjdk-11-hotspot \
  && rm -rf /var/lib/apt/lists/*
+
+# Copy files from repository.
+
+COPY ./rootfs /
 
 # Service exposed on port 8080.
 
