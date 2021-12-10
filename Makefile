@@ -50,7 +50,7 @@ docker-package: docker-build
 	# Then, copy the maven output from the container to the local workstation.
 	# Finally, remove the docker container.
 
-	mkdir $(TARGET)
+	mkdir $(TARGET) || true
 	PID=$$(docker create $(DOCKER_IMAGE_NAME) /bin/bash); \
 	docker cp $$PID:/app/ $(TARGET)/; \
 	docker rm -v $$PID
