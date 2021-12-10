@@ -20,14 +20,14 @@ ENV SENZING_G2_DIR=${SENZING_ROOT}/g2
 ENV PYTHONPATH=${SENZING_ROOT}/g2/python
 ENV LD_LIBRARY_PATH=${SENZING_ROOT}/g2/lib:${SENZING_ROOT}/g2/lib/debian
 
-# Build "senzing-listener.jar"
+# Build "senzing-listener.jar".
 
 COPY senzing-listener /senzing-listener
 WORKDIR /senzing-listener
 
 RUN export SENZING_LISTENER_VERSION=$(mvn "help:evaluate" -Dexpression=project.version -q -DforceStdout) \
  && make package \
- && cp /senzing-api-server/target/senzing-api-server-${SENZING_LISTENER_VERSION}.jar "/senzing-listener.jar" \
+ && cp /senzing-listener/target/senzing-listener-${SENZING_LISTENER_VERSION}.jar "/senzing-listener.jar" \
  && mvn install:install-file \
       -Dfile=/senzing-listener.jar  \
       -DgroupId=com.senzing \
@@ -35,7 +35,7 @@ RUN export SENZING_LISTENER_VERSION=$(mvn "help:evaluate" -Dexpression=project.v
       -Dversion=${SENZING_LISTENER_VERSION} \
       -Dpackaging=jar
 
-# Build "risk-scoring-calculator.jar"
+# Build "risk-scoring-calculator.jar".
 
 COPY . /risk-scoring-calculator
 WORKDIR /risk-scoring-calculator
@@ -55,7 +55,7 @@ ENV REFRESHED_AT=2021-12-07
 
 LABEL Name="senzing/risk-scoring-calculator" \
       Maintainer="support@senzing.com" \
-      Version="1.1.0"
+      Version="0.0.4"
 
 HEALTHCHECK CMD ["/app/healthcheck.sh"]
 
@@ -77,6 +77,10 @@ RUN wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | a
  && apt update \
  && apt install -y adoptopenjdk-11-hotspot \
  && rm -rf /var/lib/apt/lists/*
+
+# Copy files from repository.
+
+COPY ./rootfs /
 
 # Service exposed on port 8080.
 
