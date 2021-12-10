@@ -46,7 +46,7 @@ ENV REFRESHED_AT=2021-12-07
 
 LABEL Name="senzing/risk-scoring-calculator" \
       Maintainer="support@senzing.com" \
-      Version="0.0.4"
+      Version="1.0.2"
 
 HEALTHCHECK CMD ["/app/healthcheck.sh"]
 
