@@ -5,4 +5,5 @@ public class CommandOptions {
   public static final String JDBC_CONNECTION = "jdbcConnection";
   public static final String TRUSTED_SOURCES = "trustedSources";
   public static final String QUERY_RISK_CRITERIA = "queryRiskCriteria";
+  public static final String CONSUMER_TYPE = "mqType";
 }

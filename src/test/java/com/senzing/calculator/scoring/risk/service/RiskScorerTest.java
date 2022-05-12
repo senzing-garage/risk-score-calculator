@@ -13,9 +13,9 @@ import java.util.List;
 import org.junit.Test;
 
 import com.senzing.calculator.scoring.risk.service.db.DatabaseService;
-import com.senzing.listener.senzing.service.exception.ServiceExecutionException;
-import com.senzing.listener.senzing.service.exception.ServiceSetupException;
-import com.senzing.listener.senzing.service.g2.G2Service;
+import com.senzing.listener.service.exception.ServiceExecutionException;
+import com.senzing.listener.service.exception.ServiceSetupException;
+import com.senzing.listener.service.g2.G2Service;
 
 import mockit.Mock;
 import mockit.MockUp;
