@@ -18,7 +18,7 @@ public class RiskScoringCalculator {
 
     String consumerType = getConfigValue(config, CommandOptions.CONSUMER_TYPE);
     if (consumerType == null || consumerType.isEmpty()) {
-      consumerType = "rabbitmq";
+      consumerType = "RABBIT_MQ";
     }
 
     RiskScoringService service = new RiskScoringService();

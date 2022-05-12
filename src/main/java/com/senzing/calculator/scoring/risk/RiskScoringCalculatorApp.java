@@ -22,7 +22,7 @@ import com.senzing.listener.communication.rabbitmq.RabbitMQConsumer;
 
 public class RiskScoringCalculatorApp {
 
-  private static final String RABBITMQ_CONSUMER_TYPE = "rabbitmq";
+  private static final String RABBITMQ_CONSUMER_TYPE = "RABBIT_MQ";
 
   private static Map<String, Object> configValues;
 
