@@ -15,11 +15,11 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import com.senzing.listener.senzing.data.Definitions;
-import com.senzing.listener.senzing.service.ListenerService;
-import com.senzing.listener.senzing.service.exception.ServiceExecutionException;
-import com.senzing.listener.senzing.service.exception.ServiceSetupException;
+import com.senzing.listener.service.ListenerService;
+import com.senzing.listener.service.exception.ServiceExecutionException;
+import com.senzing.listener.service.exception.ServiceSetupException;
 import com.senzing.calculator.scoring.risk.data.CommandOptions;
+import com.senzing.calculator.scoring.risk.data.Definitions;
 import com.senzing.calculator.scoring.risk.service.db.DatabaseService;
 import com.senzing.calculator.scoring.risk.service.g2.G2ServiceExt;
 
@@ -171,10 +171,12 @@ public class RiskScoringService implements ListenerService {
     System.out.println(current.toInstant() + " - Initalization complete");
   }
 
+
   @Override
-  public void cleanUp() {
-    g2Service.cleanUp();
+  public void destroy() {
+    g2Service.destroy();
   }
+
 
   @Override
   public void process(String message) throws ServiceExecutionException {

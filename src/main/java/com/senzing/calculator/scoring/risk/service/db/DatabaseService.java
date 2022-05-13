@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.senzing.listener.senzing.service.exception.ServiceExecutionException;
+import com.senzing.listener.service.exception.ServiceExecutionException;
 
 public class DatabaseService {
 

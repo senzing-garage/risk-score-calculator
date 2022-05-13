@@ -6,19 +6,19 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import com.senzing.listener.senzing.communication.ConsumerType;
-import com.senzing.listener.senzing.communication.MessageConsumer;
-import com.senzing.listener.senzing.communication.MessageConsumerFactory;
-import com.senzing.listener.senzing.data.ConsumerCommandOptions;
+import com.senzing.listener.communication.ConsumerType;
+import com.senzing.listener.communication.MessageConsumer;
+import com.senzing.listener.communication.MessageConsumerFactory;
+import com.senzing.calculator.scoring.risk.data.CommandOptions;
 import com.senzing.calculator.scoring.risk.service.RiskScoringService;
 
 public class RiskScoringCalculator {
 
   public void run(String config) throws Exception {
 
-    String consumerType = getConfigValue(config, ConsumerCommandOptions.CONSUMER_TYPE);
+    String consumerType = getConfigValue(config, CommandOptions.CONSUMER_TYPE);
     if (consumerType == null || consumerType.isEmpty()) {
-      consumerType = "rabbitmq";
+      consumerType = "RABBIT_MQ";
     }
 
     RiskScoringService service = new RiskScoringService();
@@ -30,7 +30,7 @@ public class RiskScoringCalculator {
     while (service.isServiceUp()) {
       Thread.sleep(30000);
     }
-    service.cleanUp();
+    service.destroy();
   }
 
   private String getConfigValue(String config, String key) {
