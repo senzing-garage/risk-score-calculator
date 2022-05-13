@@ -47,10 +47,10 @@ The Senzing REST API Server requires version 1.13.x or later of the Senzing API 
 In order to install `g2.jar` you must:
 
 1. Locate your
-   [SENZING_G2_DIR](https://github.com/Senzing/knowledge-base/blob/master/lists/environment-variables.md#senzing_g2_dir)
+   [SENZING_G2_DIR](https://github.com/Senzing/knowledge-base/blob/main/lists/environment-variables.md#senzing_g2_dir)
    directory.
    The default locations are:
-    1. [Linux](https://github.com/Senzing/knowledge-base/blob/master/HOWTO/install-senzing-api.md#centos): `/opt/senzing/g2`
+    1. [Linux](https://github.com/Senzing/knowledge-base/blob/main/HOWTO/install-senzing-api.md#centos): `/opt/senzing/g2`
     1. Windows MSI Installer: `C:\Program Files\Senzing\`
 
 1. Determine your `SENZING_G2_JAR_VERSION` version number:
