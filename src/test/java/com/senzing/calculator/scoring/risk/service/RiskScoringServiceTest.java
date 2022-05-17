@@ -16,9 +16,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.senzing.listener.senzing.service.exception.ServiceExecutionException;
-import com.senzing.listener.senzing.service.exception.ServiceSetupException;
-import com.senzing.listener.senzing.service.g2.G2Service;
+import com.senzing.listener.service.exception.ServiceExecutionException;
+import com.senzing.listener.service.exception.ServiceSetupException;
+import com.senzing.listener.service.g2.G2Service;
 import com.senzing.calculator.scoring.risk.service.db.DatabaseService;
 import com.senzing.calculator.scoring.risk.service.g2.G2ServiceExt;
 

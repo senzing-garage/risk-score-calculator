@@ -8,10 +8,10 @@ import javax.json.JsonObjectBuilder;
 
 import com.senzing.g2.engine.G2Diagnostic;
 import com.senzing.g2.engine.G2DiagnosticJNI;
-import com.senzing.listener.senzing.service.exception.ServiceExecutionException;
-import com.senzing.listener.senzing.service.exception.ServiceSetupException;
-import com.senzing.listener.senzing.service.g2.G2Service;
-import com.senzing.listener.senzing.service.g2.G2ServiceDefinitions;
+import com.senzing.listener.service.exception.ServiceExecutionException;
+import com.senzing.listener.service.exception.ServiceSetupException;
+import com.senzing.listener.service.g2.G2Service;
+import com.senzing.listener.service.g2.G2ServiceDefinitions;
 
 public class G2ServiceExt extends G2Service {
 
@@ -34,7 +34,7 @@ public class G2ServiceExt extends G2Service {
       throw new ServiceSetupException(e);
     }
     g2Diagnostic = new G2DiagnosticJNI();
-    int result = g2Diagnostic.initV2(diagnosticModuleName, configData, verboseLogging);
+    int result = g2Diagnostic.init(diagnosticModuleName, configData, verboseLogging);
     if (result != G2ServiceDefinitions.G2_VALID_RESULT) {
       StringBuilder errorMessage = new StringBuilder("G2 diagnostic failed to initalize with error: ");
       errorMessage.append(g2DiagnosticErrorMessage(g2Diagnostic));
@@ -42,11 +42,11 @@ public class G2ServiceExt extends G2Service {
     }
   }
 
-  public void cleanUp() {
+  public void destroy() {
     if (g2Diagnostic != null) {
       g2Diagnostic.destroy();
     }
-    super.cleanUp();
+    super.destroy();
   }
 
   public String findEntitiesByFeatureIDs(List<Long> ids, long entityID) throws ServiceExecutionException {
