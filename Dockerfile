@@ -20,12 +20,6 @@ ENV SENZING_G2_DIR=${SENZING_ROOT}/g2
 ENV PYTHONPATH=${SENZING_ROOT}/g2/python
 ENV LD_LIBRARY_PATH=${SENZING_ROOT}/g2/lib:${SENZING_ROOT}/g2/lib/debian
 
-# Build "senzing-listener.jar".
-
-COPY senzing-listener /senzing-listener
-WORKDIR /senzing-listener
-RUN mvn install
-
 # Build "risk-scoring-calculator.jar".
 
 COPY . /risk-scoring-calculator
