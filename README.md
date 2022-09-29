@@ -65,6 +65,7 @@ Before running the Risk Scoring Calculator you need to set up the environment fo
 ### Setup
 
 Set up the environment:
+
 1. Linux
 
     ```console
