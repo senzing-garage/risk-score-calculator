@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.senzing</groupId>
   <artifactId>risk-scoring-calculator</artifactId>
-  <version>1.0.4</version>
+  <version>1.0.5</version>
   <name>G2 Risk Scoring Calculator</name>
   <description>Application that calculates risk score for G2 data</description>
   <properties>
