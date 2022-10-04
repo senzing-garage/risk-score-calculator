@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=senzing/senzing-base:1.6.12
+ARG BASE_IMAGE=senzing/senzingapi-runtime:3.3.0
 ARG BASE_BUILDER_IMAGE=senzing/base-image-debian:1.0.10
 
 # -----------------------------------------------------------------------------
@@ -11,7 +11,7 @@ ENV REFRESHED_AT=2022-09-27
 
 LABEL Name="senzing/risk-scoring-calculator-builder" \
       Maintainer="support@senzing.com" \
-      Version="1.0.4"
+      Version="1.0.5"
 
 # Set environment variables.
 
@@ -20,7 +20,7 @@ ENV SENZING_G2_DIR=${SENZING_ROOT}/g2
 ENV PYTHONPATH=${SENZING_ROOT}/g2/python
 ENV LD_LIBRARY_PATH=${SENZING_ROOT}/g2/lib:${SENZING_ROOT}/g2/lib/debian
 
-# Build "risk-scoring-calculator.jar".
+# Build "risk-scoring-calculator.jar"
 
 COPY . /risk-scoring-calculator
 WORKDIR /risk-scoring-calculator
@@ -40,7 +40,7 @@ ENV REFRESHED_AT=2022-09-27
 
 LABEL Name="senzing/risk-scoring-calculator" \
       Maintainer="support@senzing.com" \
-      Version="1.0.4"
+      Version="1.0.5"
 
 HEALTHCHECK CMD ["/app/healthcheck.sh"]
 
