@@ -1,5 +1,5 @@
-ARG BASE_IMAGE=senzing/senzingapi-runtime:3.4.0
-ARG BASE_BUILDER_IMAGE=senzing/base-image-debian:1.0.10
+ARG BASE_IMAGE=senzing/senzingapi-runtime:3.5.0
+ARG BASE_BUILDER_IMAGE=senzing/base-image-debian:1.0.6
 
 # -----------------------------------------------------------------------------
 # Stage: builder
@@ -7,11 +7,11 @@ ARG BASE_BUILDER_IMAGE=senzing/base-image-debian:1.0.10
 
 FROM ${BASE_BUILDER_IMAGE} as builder
 
-ENV REFRESHED_AT=2023-01-12
+ENV REFRESHED_AT=2023-04-03
 
 LABEL Name="senzing/risk-scoring-calculator-builder" \
       Maintainer="support@senzing.com" \
-      Version="1.0.6"
+      Version="1.0.7"
 
 # Set environment variables.
 
@@ -36,11 +36,11 @@ RUN export RISK_SCORING_CALCULATOR_VERSION=$(mvn "help:evaluate" -Dexpression=pr
 
 FROM ${BASE_IMAGE}
 
-ENV REFRESHED_AT=2023-01-12
+ENV REFRESHED_AT=2023-04-03
 
 LABEL Name="senzing/risk-scoring-calculator" \
       Maintainer="support@senzing.com" \
-      Version="1.0.6"
+      Version="1.0.7"
 
 HEALTHCHECK CMD ["/app/healthcheck.sh"]
 
