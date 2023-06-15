@@ -1,5 +1,5 @@
-ARG BASE_IMAGE=senzing/senzingapi-runtime:3.5.2
-ARG BASE_BUILDER_IMAGE=senzing/base-image-debian:1.0.17
+ARG BASE_IMAGE=senzing/senzingapi-runtime:3.5.3
+ARG BASE_BUILDER_IMAGE=senzing/base-image-debian:1.0.19
 
 # -----------------------------------------------------------------------------
 # Stage: builder
@@ -7,7 +7,7 @@ ARG BASE_BUILDER_IMAGE=senzing/base-image-debian:1.0.17
 
 FROM ${BASE_BUILDER_IMAGE} as builder
 
-ENV REFRESHED_AT=2023-05-09
+ENV REFRESHED_AT=2023-06-15
 
 LABEL Name="senzing/risk-scoring-calculator-builder" \
       Maintainer="support@senzing.com" \
@@ -36,7 +36,7 @@ RUN export RISK_SCORING_CALCULATOR_VERSION=$(mvn "help:evaluate" -Dexpression=pr
 
 FROM ${BASE_IMAGE}
 
-ENV REFRESHED_AT=2023-05-09
+ENV REFRESHED_AT=2023-06-15
 
 LABEL Name="senzing/risk-scoring-calculator" \
       Maintainer="support@senzing.com" \
