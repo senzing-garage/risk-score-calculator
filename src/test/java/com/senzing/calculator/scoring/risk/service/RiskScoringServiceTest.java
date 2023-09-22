@@ -10,12 +10,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.List;
+import javax.json.JsonObject;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import com.senzing.util.JsonUtilities;
 import com.senzing.listener.service.exception.ServiceExecutionException;
 import com.senzing.listener.service.exception.ServiceSetupException;
 import com.senzing.listener.service.g2.G2Service;
@@ -60,7 +63,7 @@ public class RiskScoringServiceTest {
     String config = getConfig();
     new MockUp<G2Service>() {
       @Mock
-      public void init(String iniFile) throws ServiceSetupException {
+      public void init(JsonObject config) throws ServiceSetupException {
       }
       @Mock
       public String exportConfig() throws ServiceExecutionException {
@@ -69,7 +72,7 @@ public class RiskScoringServiceTest {
     };
     new MockUp<G2ServiceExt>() {
       @Mock
-      public void init(String iniFile) throws ServiceSetupException {
+      public void init(JsonObject config) throws ServiceSetupException {
       }
     };
     new MockUp<DatabaseService>() {
@@ -104,8 +107,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -130,8 +133,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -155,8 +158,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -180,8 +183,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -209,8 +212,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -234,8 +237,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -259,8 +262,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -284,8 +287,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -309,8 +312,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -337,8 +340,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -362,8 +365,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -387,8 +390,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -416,8 +419,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -441,8 +444,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -471,8 +474,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -501,8 +504,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -530,8 +533,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   private String getConfig() throws IOException {
@@ -562,8 +565,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -586,8 +589,8 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 
   @Test
@@ -610,7 +613,7 @@ public class RiskScoringServiceTest {
       }
     };
     RiskScoringService service = new RiskScoringService();
-    service.init(CONFIG);
-    service.process(INPUT_MESSAGE);
+    service.init(JsonUtilities.parseJsonObject(CONFIG));
+    service.process(JsonUtilities.parseJsonObject(INPUT_MESSAGE));
   }
 }

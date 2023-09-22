@@ -9,19 +9,27 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
+import com.senzing.util.JsonUtilities;
 import com.senzing.listener.service.ListenerService;
 import com.senzing.listener.service.exception.ServiceExecutionException;
 import com.senzing.listener.service.exception.ServiceSetupException;
+import com.senzing.listener.service.g2.G2Service;
 import com.senzing.calculator.scoring.risk.data.CommandOptions;
 import com.senzing.calculator.scoring.risk.data.Definitions;
 import com.senzing.calculator.scoring.risk.service.db.DatabaseService;
 import com.senzing.calculator.scoring.risk.service.g2.G2ServiceExt;
+
+import static com.senzing.listener.service.ListenerService.*;
+import static com.senzing.listener.service.ListenerService.State.*;
 
 public class RiskScoringService implements ListenerService {
 
@@ -103,13 +111,38 @@ public class RiskScoringService implements ListenerService {
   List<String> trustedSources;
   List<QueryRiskData> queryRiskCriteria;
 
+  State state = UNINITIALIZED;
   boolean serviceUp;
 
   private static long processCount = 0;
   private static long missingEntityCount = 0;
 
+  /**
+   * Implemented to return the statistics associated with this instance.
+   * 
+   * {@inheritDoc}
+   */
   @Override
-  public void init(String config) throws ServiceSetupException {
+  public synchronized Map<Statistic, Number> getStatistics() {
+      return Collections.emptyMap();
+  }
+
+  @Override
+  public synchronized State getState() {
+    return this.state;
+  }
+
+  /**
+   * Sets the state for this instance.
+   * @param state The state for this instance.
+   */
+  protected synchronized void setState(State state) {
+    this.state = state;
+  }
+
+  @Override
+  public void init(JsonObject config) throws ServiceSetupException {
+    this.setState(INITIALIZING);
     serviceUp = false;
     // Get configuration
     String g2IniFile = null;
@@ -117,12 +150,10 @@ public class RiskScoringService implements ListenerService {
     String trustedSourcesString = null;
     String queryRiskString = null;
     try {
-      JsonReader reader = Json.createReader(new StringReader(config));
-      JsonObject configObject = reader.readObject();
-      g2IniFile = configObject.getString(CommandOptions.INI_FILE, "");
-      connectionString = configObject.getString(CommandOptions.JDBC_CONNECTION, "");
-      trustedSourcesString = configObject.getString(CommandOptions.TRUSTED_SOURCES, "");
-      queryRiskString = configObject.getString(CommandOptions.QUERY_RISK_CRITERIA, "");
+      g2IniFile = JsonUtilities.getString(config, CommandOptions.INI_FILE, "");
+      connectionString = JsonUtilities.getString(config, CommandOptions.JDBC_CONNECTION, "");
+      trustedSourcesString = JsonUtilities.getString(config, CommandOptions.TRUSTED_SOURCES, "");
+      queryRiskString = JsonUtilities.getString(config, CommandOptions.QUERY_RISK_CRITERIA, "");
     } catch (RuntimeException e) {
       throw new ServiceSetupException(e);
     }
@@ -143,8 +174,12 @@ public class RiskScoringService implements ListenerService {
     trustedSources = parseAndFormatCommaSeparatedString(trustedSourcesString);
     queryRiskCriteria = parseAndProcessQueryRiskCriteria(queryRiskString);
 
+    JsonObjectBuilder job = Json.createObjectBuilder();
+    job.add(G2Service.G2_INIT_CONFIG_KEY, g2IniFile);
+    job.add(G2Service.G2_MODULE_NAME_KEY, "RiskScoringService");
+    JsonObject g2InitConfig = job.build();
     g2Service = new G2ServiceExt();
-    g2Service.init(g2IniFile);
+    g2Service.init(g2InitConfig);
 
     // Get the configuration and collect information from it.
     try {
@@ -169,17 +204,20 @@ public class RiskScoringService implements ListenerService {
     serviceUp = true;
     Date current = new Date();
     System.out.println(current.toInstant() + " - Initalization complete");
+    this.setState(AVAILABLE);
   }
 
 
   @Override
   public void destroy() {
+    this.setState(DESTROYING);
     g2Service.destroy();
+    this.setState(DESTROYED);
   }
 
 
   @Override
-  public void process(String message) throws ServiceExecutionException {
+  public void process(JsonObject message) throws ServiceExecutionException {
     // The message should be of format:
     // {
     //   "DATA_SOURCE":"TEST",
@@ -189,15 +227,13 @@ public class RiskScoringService implements ListenerService {
     //   ]
     // }
     try {
-      JsonReader reader = Json.createReader(new StringReader(message));
-      JsonObject json = reader.readObject();
       // We are only interested in the entity ids from the AFFECTED_ENTITIES section.
-      JsonArray entities = json.getJsonArray(AFFECTED_ENTITIES_TAG);
+      JsonArray entities = JsonUtilities.getJsonArray(message, AFFECTED_ENTITIES_TAG);
       if (entities != null) {
         for (int i = 0; i < entities.size(); i++) {
           JsonObject entity = entities.getJsonObject(i);
           if (entity != null) {
-            Long entityID = entity.getJsonNumber(Definitions.ENTITY_ID_FIELD).longValue();
+            Long entityID = JsonUtilities.getLong(entity, Definitions.ENTITY_ID_FIELD);
             processEntity(entityID);
           }
         }
