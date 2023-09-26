@@ -11,7 +11,7 @@ ENV REFRESHED_AT=2023-06-29
 
 LABEL Name="senzing/risk-scoring-calculator-builder" \
       Maintainer="support@senzing.com" \
-      Version="1.0.7"
+      Version="2.0.0"
 
 # Set environment variables.
 
@@ -40,7 +40,7 @@ ENV REFRESHED_AT=2023-06-29
 
 LABEL Name="senzing/risk-scoring-calculator" \
       Maintainer="support@senzing.com" \
-      Version="1.0.7"
+      Version="2.0.0"
 
 HEALTHCHECK CMD ["/app/healthcheck.sh"]
 
