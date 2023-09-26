@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [markdownlint](https://dlaa.me/markdownlint/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2023-09-26
+
+### Changed in 2.0.0
+
+- Updated `senzing-listener` dependency to version `0.5.0` (significant changes)
+- Updated Dockerfile for adoptium.net Temurin (replacing adoptopenjdk)
+
 ## [1.0.7] - 2023-04-04
 
 ### Changed in 1.0.7
