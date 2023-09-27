@@ -11,7 +11,7 @@ ENV REFRESHED_AT=2023-06-29
 
 LABEL Name="senzing/risk-scoring-calculator-builder" \
       Maintainer="support@senzing.com" \
-      Version="1.0.7"
+      Version="2.0.0"
 
 # Set environment variables.
 
@@ -40,7 +40,7 @@ ENV REFRESHED_AT=2023-06-29
 
 LABEL Name="senzing/risk-scoring-calculator" \
       Maintainer="support@senzing.com" \
-      Version="1.0.7"
+      Version="2.0.0"
 
 HEALTHCHECK CMD ["/app/healthcheck.sh"]
 
@@ -57,10 +57,13 @@ RUN apt update \
 
 # Install Java-11.
 
-RUN wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add - \
- && add-apt-repository --yes https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/ \
- && apt update \
- && apt install -y adoptopenjdk-11-hotspot \
+RUN mkdir -p /etc/apt/keyrings \
+ && wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public > /etc/apt/keyrings/adoptium.asc
+
+RUN echo "deb [signed-by=/etc/apt/keyrings/adoptium.asc] https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" >> /etc/apt/sources.list
+
+RUN apt update \
+ && apt install -y temurin-11-jdk \
  && rm -rf /var/lib/apt/lists/*
 
 # Copy files from repository.

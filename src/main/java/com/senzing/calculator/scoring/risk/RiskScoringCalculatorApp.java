@@ -51,10 +51,10 @@ public class RiskScoringCalculatorApp {
       configValues.put(CommandOptions.JDBC_CONNECTION, config.getConfigValue(ConfigKeys.JDBC_CONNECTION));
       configValues.put(CommandOptions.TRUSTED_SOURCES, config.getConfigValue(ConfigKeys.TRUSTED_SOURCES));
       configValues.put(CommandOptions.QUERY_RISK_CRITERIA, config.getConfigValue(ConfigKeys.QUERY_RISK_CRITERIA));
-      configValues.put(RabbitMQConsumer.MQ_HOST, config.getConfigValue(ConfigKeys.RABBITMQ_HOST));
-      configValues.put(RabbitMQConsumer.MQ_QUEUE, config.getConfigValue(ConfigKeys.RABBITMQ_NAME));
-      configValues.put(RabbitMQConsumer.MQ_USER, config.getConfigValue(ConfigKeys.RABBITMQ_USER_NAME));
-      configValues.put(RabbitMQConsumer.MQ_PASSWORD, config.getConfigValue(ConfigKeys.RABBITMQ_PASSWORD));
+      configValues.put(RabbitMQConsumer.MQ_HOST_KEY, config.getConfigValue(ConfigKeys.RABBITMQ_HOST));
+      configValues.put(RabbitMQConsumer.MQ_QUEUE_KEY, config.getConfigValue(ConfigKeys.RABBITMQ_NAME));
+      configValues.put(RabbitMQConsumer.MQ_USER_KEY, config.getConfigValue(ConfigKeys.RABBITMQ_USER_NAME));
+      configValues.put(RabbitMQConsumer.MQ_PASSWORD_KEY, config.getConfigValue(ConfigKeys.RABBITMQ_PASSWORD));
       // This is a future enhancement and enabled when other consumers have been added.
       //configValues.put(ConsumerCommandOptions.CONSUMER_TYPE, config.getConfigValue(ConfigKeys.CONSUMER_TYPE));
     } catch (IOException e) {
@@ -73,10 +73,10 @@ public class RiskScoringCalculatorApp {
     options.addOption(CommandOptions.TRUSTED_SOURCES, true, "List of trusted sources used for scoring");
     options.addOption(CommandOptions.QUERY_RISK_CRITERIA, true, "List of query risk scoring criteria");
     // Options for consumer.
-    options.addOption(RabbitMQConsumer.MQ_HOST, true, "Host for RabbitMQ");
-    options.addOption(RabbitMQConsumer.MQ_USER, true, "User name for RabbitMQ");
-    options.addOption(RabbitMQConsumer.MQ_PASSWORD, true, "Password for RabbitMQ");
-    options.addOption(RabbitMQConsumer.MQ_QUEUE, true, "Queue name for the receiving queue");
+    options.addOption(RabbitMQConsumer.MQ_HOST_KEY, true, "Host for RabbitMQ");
+    options.addOption(RabbitMQConsumer.MQ_USER_KEY, true, "User name for RabbitMQ");
+    options.addOption(RabbitMQConsumer.MQ_PASSWORD_KEY, true, "Password for RabbitMQ");
+    options.addOption(RabbitMQConsumer.MQ_QUEUE_KEY, true, "Queue name for the receiving queue");
     options.addOption(CommandOptions.CONSUMER_TYPE, true, "Type of the consumer used e.g. rabbitmq");
 
     CommandLineParser parser = new DefaultParser();
@@ -86,10 +86,10 @@ public class RiskScoringCalculatorApp {
     addCommandLineValue(commandLine, CommandOptions.JDBC_CONNECTION);
     addCommandLineValue(commandLine, CommandOptions.TRUSTED_SOURCES);
     addCommandLineValue(commandLine, CommandOptions.QUERY_RISK_CRITERIA);
-    addCommandLineValue(commandLine, RabbitMQConsumer.MQ_HOST);
-    addCommandLineValue(commandLine, RabbitMQConsumer.MQ_USER);
-    addCommandLineValue(commandLine, RabbitMQConsumer.MQ_PASSWORD);
-    addCommandLineValue(commandLine, RabbitMQConsumer.MQ_QUEUE);
+    addCommandLineValue(commandLine, RabbitMQConsumer.MQ_HOST_KEY);
+    addCommandLineValue(commandLine, RabbitMQConsumer.MQ_USER_KEY);
+    addCommandLineValue(commandLine, RabbitMQConsumer.MQ_PASSWORD_KEY);
+    addCommandLineValue(commandLine, RabbitMQConsumer.MQ_QUEUE_KEY);
     addCommandLineValue(commandLine, CommandOptions.CONSUMER_TYPE);
   }
 
@@ -102,8 +102,8 @@ public class RiskScoringCalculatorApp {
     List<String> unsetParameters = new ArrayList<>();
     checkParameter(unsetParameters, CommandOptions.INI_FILE);
     checkParameter(unsetParameters, CommandOptions.JDBC_CONNECTION);
-    checkParameter(unsetParameters, RabbitMQConsumer.MQ_HOST);
-    checkParameter(unsetParameters, RabbitMQConsumer.MQ_QUEUE);
+    checkParameter(unsetParameters, RabbitMQConsumer.MQ_HOST_KEY);
+    checkParameter(unsetParameters, RabbitMQConsumer.MQ_QUEUE_KEY);
 
     if (!unsetParameters.isEmpty()) {
       System.out.println("No configuration found for parameters: " + String.join(", ", unsetParameters));
