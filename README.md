@@ -1,5 +1,17 @@
 # risk-scoring-calculator
 
+If you are beginning your journey with
+[Senzing](https://senzing.com/),
+please start with
+[Senzing Quick Start guides](https://docs.senzing.com/quickstart/).
+
+You are in the
+[Senzing Garage](https://github.com/senzing-garage)
+where projects are "tinkered" on.
+Although this GitHub repository may help you understand an approach to using Senzing,
+it's not considered to be "production ready" and is not considered to be part of the Senzing product.
+Heck, it may not even be appropriate for your application of Senzing!
+
 ## Overview
 
 This application examines G2 entities and scores them based the quality of its data and the sharing and interaction of the data with other entities.
@@ -53,7 +65,7 @@ You will also need an installation of Senzing and a Senzing project.  Instructio
 To build:
 
 ```console
-git clone git@github.com:Senzing/risk-score-calculator.git
+git clone git@github.com:senzing-garage/risk-score-calculator.git
 cd risk-score-calculator
 mvn install
 ```
