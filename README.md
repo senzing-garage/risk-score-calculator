@@ -1,5 +1,7 @@
 # risk-scoring-calculator
 
+## :no_entry: Deprecated
+
 If you are beginning your journey with
 [Senzing](https://senzing.com/),
 please start with
@@ -11,6 +13,8 @@ where projects are "tinkered" on.
 Although this GitHub repository may help you understand an approach to using Senzing,
 it's not considered to be "production ready" and is not considered to be part of the Senzing product.
 Heck, it may not even be appropriate for your application of Senzing!
+
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
 
 ## Overview
 
@@ -56,9 +60,9 @@ The relationships are scored according to this config, e.g. +NAME+DOB on a relat
 To build the Risk Score Calculator you will need Apache Maven (recommend version 3.6.1 or later)
 as well as OpenJDK version 11.0.x (recommend version 11.0.6+10 or later).
 
-To run this application you will need a RabbitMQ installation or an access to a RabbitMQ server.  More information can be found here https://www.rabbitmq.com/download.html
+To run this application you will need a RabbitMQ installation or an access to a RabbitMQ server.  More information can be found here <https://www.rabbitmq.com/download.html>
 
-You will also need an installation of Senzing and a Senzing project.  Instructions can be found here https://docs.senzing.com/quickstart/
+You will also need an installation of Senzing and a Senzing project.  Instructions can be found here <https://docs.senzing.com/quickstart/>
 
 ### Building
 
